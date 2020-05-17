@@ -341,6 +341,30 @@ namespace UnitTests
             }
         }
 
+        [Test]
+        public void WhenPlayingEachBallForAPlayersBoard_ThatBoardShouldBeSetAsWinner()
+        {
+            (var newGame, var chosenPlayerSetToWin, var otherPlayer) = CreateDefaultGameWithPlayers();
+            newGame.Start();
+            var chosenBoardSetToWin = chosenPlayerSetToWin.Boards.First();
+
+            foreach(var ball in chosenBoardSetToWin.BallsConfigured)
+                newGame.PlayBall(ball);
+
+            chosenBoardSetToWin.State.Should().Be(BoardState.Winner);
+
+            foreach(var player in new Player[] { chosenPlayerSetToWin, otherPlayer })
+            {
+                foreach(var board in player.Boards)
+                {
+                    if(board == chosenBoardSetToWin)
+                        board.State.Should().Be(BoardState.Winner);
+                    else
+                        board.State.Should().Be(BoardState.Playing);
+                }
+            }
+        }
+
         #endregion
 
         #region Helpers
