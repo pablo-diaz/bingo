@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using WebUI.ViewModels;
+
 namespace WebUI
 {
     public class Startup
@@ -19,6 +21,8 @@ namespace WebUI
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
+            services.AddTransient<GameAdmonViewModel>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

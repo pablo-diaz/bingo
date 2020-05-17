@@ -1,0 +1,52 @@
+﻿@page "/admin"
+
+@using WebUI.ViewModels
+@inject GameAdmonViewModel admon
+
+<h1>Administración de Juegos</h1>
+
+@if (admon.CanLandingBeShown)
+{
+    <button class="btn btn-primary" @onclick=admon.TransitionToNewGame>Crear nuevo juego</button>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Jugadores</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var game in admon.Games)
+            {
+                <tr>
+                    <td>@game.Name</td>
+                    <td>@game.PlayerCount</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (admon.CanNewGameSectionBeShown)
+{
+    <EditForm Model=admon.GameModel OnValidSubmit=admon.CreateNewGame>
+        <DataAnnotationsValidator />
+        <div class="form-row">
+            <div class="col">
+                <label for=admon.NewGameModel.Name>Nombre del Juego</label>
+                <InputText type="text" class="form-control" placeholder="Escriba un nombre del juego" @bind-Value=admon.GameModel.Name />
+                <ValidationMessage For="@(() => admon.GameModel.Name)" />
+            </div>
+        </div>
+        <button type="reset" class="btn btn-secondary" @onclick=admon.CancelCreatingNewGame>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Crear juego</button>
+    </EditForm>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await admon.InitializeComponent();
+    }
+}
