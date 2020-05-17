@@ -16,7 +16,7 @@ namespace Core
     {
         #region Properties
 
-        public BoardState State { get; }
+        public BoardState State { get; private set; }
 
         private HashSet<Ball> _ballsConfigured { get; }
         public IReadOnlyCollection<Ball> BallsConfigured { get => this._ballsConfigured.ToList(); }
@@ -73,7 +73,7 @@ namespace Core
 
         #region Builders
 
-        public static Result<Board> RandonmlyCreateFromBallSet(ISet<Ball> balls, int countPerColumn)
+        public static Result<Board> RandonmlyCreateFromBallSet(HashSet<Ball> balls, int countPerColumn)
         {
             if (balls == null || balls.Count() == 0)
                 return Result.Failure<Board>("You must provide a valid balls array");
@@ -137,6 +137,22 @@ namespace Core
              balls.Where(ball => ball.Letter == BallLeter.N).ToList(),
              balls.Where(ball => ball.Letter == BallLeter.G).ToList(),
              balls.Where(ball => ball.Letter == BallLeter.O).ToList());
+
+        #endregion
+
+        #region Internal methods
+
+        internal Result PlayBall(Ball ballToPlay)
+        {
+            if (this._ballsConfigured.Contains(ballToPlay))
+            {
+                this._ballsPlayed.Add(ballToPlay);
+                if (this._ballsPlayed.SetEquals(this._ballsConfigured))
+                    this.State = BoardState.Winner;
+            }
+
+            return Result.Ok();
+        }
 
         #endregion
     }

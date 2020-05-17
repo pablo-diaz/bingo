@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 
+using CSharpFunctionalExtensions;
+
 namespace Core
 {
     public class Player
@@ -48,6 +50,29 @@ namespace Core
         {
             this.Name = name;
             this.Security = security;
+
+            this._boards = new HashSet<Board>();
+        }
+
+        #endregion
+
+        #region Internal methods
+
+        internal void AddBoard(Board board)
+        {
+            this._boards.Add(board);
+        }
+
+        internal Result PlayBall(Ball ballToPlay)
+        {
+            foreach(var board in this._boards)
+            {
+                var boardPlayBallResult = board.PlayBall(ballToPlay);
+                if (boardPlayBallResult.IsFailure)
+                    return boardPlayBallResult;
+            }
+
+            return Result.Ok();
         }
 
         #endregion

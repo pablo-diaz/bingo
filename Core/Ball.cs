@@ -27,7 +27,7 @@ namespace Core
             Letter = letter;
         }
 
-        public static Result<Ball> Create(short number, BallLeter letter)
+        public static Result<Ball> Create(BallLeter letter, short number)
         {
             if (number <= 0)
                 return Result.Failure<Ball>("Wrong number value");
