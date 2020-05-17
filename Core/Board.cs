@@ -142,16 +142,14 @@ namespace Core
 
         #region Internal methods
 
-        internal Result PlayBall(Ball ballToPlay)
+        internal void PlayBall(Ball ballToPlay)
         {
-            if (this._ballsConfigured.Contains(ballToPlay))
-            {
-                this._ballsPlayed.Add(ballToPlay);
-                if (this._ballsPlayed.SetEquals(this._ballsConfigured))
-                    this.State = BoardState.Winner;
-            }
+            if (!this._ballsConfigured.Contains(ballToPlay))
+                return;
 
-            return Result.Ok();
+            this._ballsPlayed.Add(ballToPlay);
+            if (this._ballsPlayed.SetEquals(this._ballsConfigured))
+                this.State = BoardState.Winner;
         }
 
         #endregion

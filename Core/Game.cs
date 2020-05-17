@@ -115,11 +115,7 @@ namespace Core
                 return Result.Failure("Ball has already been played");
 
             foreach(var player in this._players)
-            {
-                var playerBallPlayedResult = player.PlayBall(ballToPlay);
-                if (playerBallPlayedResult.IsFailure)
-                    return playerBallPlayedResult;
-            }
+                player.PlayBall(ballToPlay);
 
             this._ballsPlayed.Add(ballToPlay);
 

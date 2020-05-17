@@ -1,8 +1,6 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 
-using CSharpFunctionalExtensions;
-
 namespace Core
 {
     public class Player
@@ -63,16 +61,10 @@ namespace Core
             this._boards.Add(board);
         }
 
-        internal Result PlayBall(Ball ballToPlay)
+        internal void PlayBall(Ball ballToPlay)
         {
             foreach(var board in this._boards)
-            {
-                var boardPlayBallResult = board.PlayBall(ballToPlay);
-                if (boardPlayBallResult.IsFailure)
-                    return boardPlayBallResult;
-            }
-
-            return Result.Ok();
+                board.PlayBall(ballToPlay);
         }
 
         #endregion

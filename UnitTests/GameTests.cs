@@ -231,7 +231,56 @@ namespace UnitTests
 
         #endregion
 
+        #region Starging Game
+
+        [Test]
+        public void WhenGameIsInRightState_StartingGame_Works()
+        {
+            (var newGame, var _, var __) = CreateDefaultGameWithPlayers();
+
+            var startGameResult = newGame.Start();
+
+            startGameResult.IsSuccess.Should().BeTrue();
+        }
+
+        [Test]
+        public void WhenGamePlayersDontHaveBoardsAdded_StartingGame_Fails()
+        {
+            (var newGame, var _, var __) = CreateDefaultGameWithPlayers(false);
+
+            var startGameResult = newGame.Start();
+
+            startGameResult.IsFailure.Should().BeTrue();
+        }
+
+        #endregion
+
         #region Playing Balls
+
+        [Test]
+        public void WhenPlayingBalls_IfInvalidBallProvided_ItFails()
+        {
+            (var newGame, var _, var __) = CreateDefaultGameWithPlayers();
+            newGame.Start();
+
+            var ballToPlay = Ball.Create(BallLeter.B, 120).Value;
+            var playBallResult = newGame.PlayBall(ballToPlay);
+
+            playBallResult.IsFailure.Should().BeTrue();
+        }
+
+        [Test]
+        public void WhenPlayingBalls_IfBallHasBeenPlayedAlready_ItFails()
+        {
+            (var newGame, var _, var __) = CreateDefaultGameWithPlayers();
+            newGame.Start();
+
+            var ballToPlay = Ball.Create(BallLeter.B, 2).Value;
+            newGame.PlayBall(ballToPlay);
+            var playBallResult = newGame.PlayBall(ballToPlay);
+
+            playBallResult.IsFailure.Should().BeTrue();
+        }
 
         [Test]
         public void WhenPlayingBalls_IfGameHasNotStartedYet_ItFails()
@@ -299,7 +348,7 @@ namespace UnitTests
         private Result<Game> CreateGameWithoutPlayers(string withName = "Name 01", short withTotalBallsCount = 75, short withMaxNBallsPerBucket = 5) =>
             Game.Create(withName, withTotalBallsCount, withMaxNBallsPerBucket);
 
-        private (Game game, Player player1, Player player2) CreateDefaultGameWithPlayers()
+        private (Game game, Player player1, Player player2) CreateDefaultGameWithPlayers(bool shouldBoardsBeAdded = true)
         {
             var newGame = CreateGameWithoutPlayers().Value;
             var player1 = new Player("Player 01", PlayerSecurity.Create("login 01", "passwd 01").Value);
@@ -308,9 +357,12 @@ namespace UnitTests
             newGame.AddPlayer(player1);
             newGame.AddPlayer(player2);
 
-            newGame.AddBoardToPlayer(player1);
-            newGame.AddBoardToPlayer(player1);
-            newGame.AddBoardToPlayer(player2);
+            if(shouldBoardsBeAdded)
+            {
+                newGame.AddBoardToPlayer(player1);
+                newGame.AddBoardToPlayer(player1);
+                newGame.AddBoardToPlayer(player2);
+            }
 
             return (newGame, player1, player2);
         }
