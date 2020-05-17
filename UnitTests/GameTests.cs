@@ -127,7 +127,7 @@ namespace UnitTests
         [Test]
         public void WhenAddingAValidPlayer_ItWorks()
         {
-            var newPlayer = new Player("Player 01", PlayerSecurity.Create("login 01", "passwd 01").Value);
+            var newPlayer = CreateValidPlayer();
 
             var newGameResult = CreateGameWithoutPlayers();
             var result = newGameResult.Value.AddPlayer(newPlayer);
@@ -152,7 +152,7 @@ namespace UnitTests
         [Test]
         public void WhenAddingAPlayer_WhenGameHasStarted_ItFails()
         {
-            var newPlayer = new Player("Player 03", PlayerSecurity.Create("login 03", "passwd 03").Value);
+            var newPlayer = CreateValidPlayer(withName: "Player 03", withLogin: "login 03");
             (var newGame, var _, var __) = CreateDefaultGameWithPlayers();
             newGame.Start();
 
@@ -164,8 +164,8 @@ namespace UnitTests
         [Test]
         public void WhenAddingPlayersWithSameLogin_ItFails()
         {
-            var newPlayer1 = new Player("Player 01", PlayerSecurity.Create("login 01", "passwd 01").Value);
-            var newPlayer2 = new Player("Player 02", PlayerSecurity.Create("login 01", "passwd 02").Value);
+            var newPlayer1 = CreateValidPlayer(withName: "Player 01", withLogin: "login 01");
+            var newPlayer2 = CreateValidPlayer(withName: "Player 02", withLogin: "login 01");
             var newGameResult = CreateGameWithoutPlayers();
             newGameResult.Value.AddPlayer(newPlayer1);
             var result = newGameResult.Value.AddPlayer(newPlayer2);
@@ -176,8 +176,8 @@ namespace UnitTests
         [Test]
         public void WhenAddingPlayersWithSameName_ItFails()
         {
-            var newPlayer1 = new Player("Player 01", PlayerSecurity.Create("login 01", "passwd 01").Value);
-            var newPlayer2 = new Player("Player 01", PlayerSecurity.Create("login 02", "passwd 02").Value);
+            var newPlayer1 = CreateValidPlayer(withName: "Player 01", withLogin: "login 01");
+            var newPlayer2 = CreateValidPlayer(withName: "Player 01", withLogin: "login 02");
             var newGameResult = CreateGameWithoutPlayers();
             newGameResult.Value.AddPlayer(newPlayer1);
             var result = newGameResult.Value.AddPlayer(newPlayer2);
@@ -188,8 +188,8 @@ namespace UnitTests
         [Test]
         public void WhenAddingPlayersWithDifferentLogins_ItWorks()
         {
-            var newPlayer1 = new Player("Player 01", PlayerSecurity.Create("login 01", "passwd 01").Value);
-            var newPlayer2 = new Player("Player 02", PlayerSecurity.Create("login 02", "passwd 02").Value);
+            var newPlayer1 = CreateValidPlayer(withName: "Player 01", withLogin: "login 01");
+            var newPlayer2 = CreateValidPlayer(withName: "Player 02", withLogin: "login 02");
             var newGameResult = CreateGameWithoutPlayers();
             newGameResult.Value.AddPlayer(newPlayer1);
             var result = newGameResult.Value.AddPlayer(newPlayer2);
@@ -205,7 +205,7 @@ namespace UnitTests
         public void WhenAddingBoardToPlayer_ItWorks()
         {
             var newGameResult = CreateGameWithoutPlayers();
-            var newPlayer = new Player("Player 01", PlayerSecurity.Create("login 01", "passwd 01").Value);
+            var newPlayer = CreateValidPlayer();
             newGameResult.Value.AddPlayer(newPlayer);
 
             var addBoardResult = newGameResult.Value.AddBoardToPlayer(newPlayer);
@@ -228,8 +228,8 @@ namespace UnitTests
         public void WhenAddingBoardToNonExistingPlayer_ItFails()
         {
             var newGameResult = CreateGameWithoutPlayers();
-            var newPlayer1 = new Player("Player 01", PlayerSecurity.Create("login 01", "passwd 01").Value);
-            var newPlayer2 = new Player("Player 02", PlayerSecurity.Create("login 01", "passwd 01").Value);
+            var newPlayer1 = CreateValidPlayer(withName: "Player 01", withLogin: "login 01");
+            var newPlayer2 = CreateValidPlayer(withName: "Player 02", withLogin: "login 01");
             newGameResult.Value.AddPlayer(newPlayer1);
 
             var addBoardResult = newGameResult.Value.AddBoardToPlayer(newPlayer2);
@@ -411,7 +411,7 @@ namespace UnitTests
         {
             (var newGame, var _, var __, var ___) = SetWinnnerPlayerForGame();
 
-            var result = newGame.SetWinner(new Player("Another name", PlayerSecurity.Create("login 4", "passwd 4").Value));
+            var result = newGame.SetWinner(CreateValidPlayer(withName: "Another name", withLogin: "login 4"));
 
             result.IsFailure.Should().BeTrue();
             newGame.Winner.HasNoValue.Should().BeTrue();
@@ -438,8 +438,8 @@ namespace UnitTests
         private (Game game, Player player1, Player player2) CreateDefaultGameWithPlayers(bool shouldBoardsBeAdded = true)
         {
             var newGame = CreateGameWithoutPlayers().Value;
-            var player1 = new Player("Player 01", PlayerSecurity.Create("login 01", "passwd 01").Value);
-            var player2 = new Player("Player 02", PlayerSecurity.Create("login 02", "passwd 02").Value);
+            var player1 = CreateValidPlayer(withName: "Player 01", withLogin: "login 01");
+            var player2 = CreateValidPlayer(withName: "Player 02", withLogin: "login 02");
 
             newGame.AddPlayer(player1);
             newGame.AddPlayer(player2);
@@ -465,6 +465,9 @@ namespace UnitTests
 
             return (newGame, chosenPlayerSetToWin, chosenBoardSetToWin, otherPlayer);
         }
+
+        private Player CreateValidPlayer(string withName = "Player 01", string withLogin = "Login 01") =>
+            Player.Create(withName, PlayerSecurity.Create(withLogin, "Passwd 01").Value).Value;
 
         #endregion
     }

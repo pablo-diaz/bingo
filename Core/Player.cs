@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 
+using CSharpFunctionalExtensions;
+
 namespace Core
 {
     public class Player
@@ -44,12 +46,24 @@ namespace Core
 
         #region Constructor
 
-        public Player(string name, PlayerSecurity security)
+        private Player(string name, PlayerSecurity security)
         {
             this.Name = name;
             this.Security = security;
 
             this._boards = new HashSet<Board>();
+        }
+
+        #endregion
+
+        #region Public methods
+
+        public static Result<Player> Create(string name, PlayerSecurity playerSecurity)
+        {
+            if (string.IsNullOrEmpty(name))
+                return Result.Failure<Player>("Wrong name");
+
+            return Result.Ok(new Player(name, playerSecurity));
         }
 
         #endregion
