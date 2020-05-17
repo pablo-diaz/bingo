@@ -56,7 +56,7 @@ namespace Core
 
         #endregion
 
-        #region Public methods
+        #region Builders
 
         public static Result<Player> Create(string name, PlayerSecurity playerSecurity)
         {

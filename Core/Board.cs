@@ -73,7 +73,7 @@ namespace Core
 
         #region Builders
 
-        public static Result<Board> RandonmlyCreateFromBallSet(HashSet<Ball> balls, int countPerColumn)
+        internal static Result<Board> RandonmlyCreateFromBallSet(HashSet<Ball> balls, int countPerColumn)
         {
             if (balls == null || balls.Count() == 0)
                 return Result.Failure<Board>("You must provide a valid balls array");
