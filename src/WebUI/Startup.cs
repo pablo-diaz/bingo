@@ -1,3 +1,5 @@
+using Blazored.Toast;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -22,6 +24,7 @@ namespace WebUI
             services.AddRazorPages();
             services.AddServerSideBlazor();
 
+            services.AddBlazoredToast();
             services.AddTransient<GameAdmonViewModel>();
         }
 

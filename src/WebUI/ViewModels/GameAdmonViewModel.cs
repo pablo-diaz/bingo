@@ -5,6 +5,8 @@ using Core;
 
 using WebUI.Models.GameAdmon;
 
+using Blazored.Toast.Services;
+
 namespace WebUI.ViewModels
 {
     public class GameAdmonViewModel
@@ -17,7 +19,7 @@ namespace WebUI.ViewModels
 
         private const short STANDARD_BALLS_VERSION_TOTAL = 75;
         private const short STANDARD_BALLS_VERSION_PER_BUCKET_COUNT = 5;
-        
+        private readonly IToastService _toastService;
         private State _currentState;
 
         public List<GameModel> Games { get; private set; }
@@ -25,6 +27,11 @@ namespace WebUI.ViewModels
 
         public bool CanLandingBeShown => this._currentState == State.BROWSING;
         public bool CanNewGameSectionBeShown => this._currentState == State.CREATING_GAME;
+
+        public GameAdmonViewModel(IToastService toastService)
+        {
+            this._toastService = toastService;
+        }
 
         public Task InitializeComponent()
         {
@@ -52,11 +59,15 @@ namespace WebUI.ViewModels
             var newGameResult = Game.Create(this.GameModel.Name, STANDARD_BALLS_VERSION_TOTAL, STANDARD_BALLS_VERSION_PER_BUCKET_COUNT);
             if(newGameResult.IsFailure)
             {
-
+                this._toastService.ShowError(newGameResult.Error);
+                return Task.CompletedTask;
             }
 
             this.Games.Add(GameModel.FromEntity(newGameResult.Value));
-            this._currentState = State.BROWSING;
+
+            this._toastService.ShowSuccess("El juego se ha creado exitosamente");
+
+            this.TransitionToBrowsing();
             return Task.CompletedTask;
         }
 
