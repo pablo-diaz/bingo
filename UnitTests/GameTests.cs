@@ -30,6 +30,13 @@ namespace UnitTests
         }
 
         [Test]
+        public void WhenCreatingANewGame_ItsWinner_ShouldNotBeSet()
+        {
+            (var newGame, var _, var __) = CreateDefaultGameWithPlayers();
+            newGame.Winner.HasNoValue.Should().BeTrue();
+        }
+
+        [Test]
         public void WhenCreatingANewGame_IfProvidingWrongMaxBallsPerBucket_ItShouldFail(
             [Values(-2, 0, 1)] short wrongValues)
         {
@@ -344,12 +351,7 @@ namespace UnitTests
         [Test]
         public void WhenPlayingEachBallForAPlayersBoard_ThatBoardShouldBeSetAsWinner()
         {
-            (var newGame, var chosenPlayerSetToWin, var otherPlayer) = CreateDefaultGameWithPlayers();
-            newGame.Start();
-            var chosenBoardSetToWin = chosenPlayerSetToWin.Boards.First();
-
-            foreach(var ball in chosenBoardSetToWin.BallsConfigured)
-                newGame.PlayBall(ball);
+            (var newGame, var chosenPlayerSetToWin, var chosenBoardSetToWin, var otherPlayer) = SetWinnnerPlayerForGame();
 
             chosenBoardSetToWin.State.Should().Be(BoardState.Winner);
 
@@ -363,6 +365,67 @@ namespace UnitTests
                         board.State.Should().Be(BoardState.Playing);
                 }
             }
+        }
+
+        #endregion
+
+        #region Setting Winner
+
+        [Test]
+        public void SettingTheRightWinner_Works()
+        {
+            (var newGame, var chosenPlayerSetToWin, var _, var __) = SetWinnnerPlayerForGame();
+
+            var result = newGame.SetWinner(chosenPlayerSetToWin);
+
+            result.IsSuccess.Should().BeTrue();
+            newGame.Winner.HasValue.Should().BeTrue();
+            newGame.Winner.Value.Should().Be(chosenPlayerSetToWin);
+            newGame.State.Should().Be(GameState.Finished);
+        }
+
+        [Test]
+        public void WhenSettingTheWinner_IfProvindingWrongWinner_ItFails()
+        {
+            (var newGame, var _, var __, var otherPlayer) = SetWinnnerPlayerForGame();
+
+            var result = newGame.SetWinner(otherPlayer);
+
+            result.IsFailure.Should().BeTrue();
+            newGame.Winner.HasNoValue.Should().BeTrue();
+        }
+
+        [Test]
+        public void WhenSettingTheWinner_IfProvindingNullWinner_ItFails()
+        {
+            (var newGame, var _, var __, var ___) = SetWinnnerPlayerForGame();
+
+            var result = newGame.SetWinner(null);
+
+            result.IsFailure.Should().BeTrue();
+            newGame.Winner.HasNoValue.Should().BeTrue();
+        }
+
+        [Test]
+        public void WhenSettingTheWinner_IfProvindingNonExistingPlayer_ItFails()
+        {
+            (var newGame, var _, var __, var ___) = SetWinnnerPlayerForGame();
+
+            var result = newGame.SetWinner(new Player("Another name", PlayerSecurity.Create("login 4", "passwd 4").Value));
+
+            result.IsFailure.Should().BeTrue();
+            newGame.Winner.HasNoValue.Should().BeTrue();
+        }
+
+        [Test]
+        public void WhenSettingTheWinner_IfGameHasNotStartedYet_ItFails()
+        {
+            (var newGame, var chosenPlayerSetToWin, var otherPlayer) = CreateDefaultGameWithPlayers();
+            
+            var result = newGame.SetWinner(chosenPlayerSetToWin);
+
+            result.IsFailure.Should().BeTrue();
+            newGame.Winner.HasNoValue.Should().BeTrue();
         }
 
         #endregion
@@ -389,6 +452,18 @@ namespace UnitTests
             }
 
             return (newGame, player1, player2);
+        }
+
+        private (Game game, Player winner, Board winningBoard, Player looser) SetWinnnerPlayerForGame()
+        {
+            (var newGame, var chosenPlayerSetToWin, var otherPlayer) = CreateDefaultGameWithPlayers();
+            newGame.Start();
+            var chosenBoardSetToWin = chosenPlayerSetToWin.Boards.First();
+
+            foreach (var ball in chosenBoardSetToWin.BallsConfigured)
+                newGame.PlayBall(ball);
+
+            return (newGame, chosenPlayerSetToWin, chosenBoardSetToWin, otherPlayer);
         }
 
         #endregion

@@ -20,6 +20,7 @@ namespace Core
         public string Name { get; }
         public short WithNBallsMaxPerBoardBucket { get; }
         public GameState State { get; private set; }
+        public Maybe<Player> Winner { get; private set; }
 
         private HashSet<Ball> _ballsConfigured;
 
@@ -39,6 +40,7 @@ namespace Core
         {
             this.Name = name;
             this.State = GameState.Draft;
+            this.Winner = Maybe<Player>.None;
             this.WithNBallsMaxPerBoardBucket = withNBallsMaxPerBoardBucket;
 
             this._players = new HashSet<Player>();
@@ -137,6 +139,26 @@ namespace Core
             player.AddBoard(newBoardResult.Value);
 
             return newBoardResult;
+        }
+
+        public Result SetWinner(Player winner)
+        {
+            if (winner == null)
+                return Result.Failure("Player is Null");
+
+            if(!this._players.Contains(winner))
+                return Result.Failure("Player is not part of the game");
+
+            if(this.State != GameState.Started)
+                return Result.Failure("Game has not started yet");
+
+            if(!winner.Boards.Any(board => board.State == BoardState.Winner))
+                return Result.Failure("This Player does not have a winning Board");
+
+            this.Winner = winner;
+            this.State = GameState.Finished;
+
+            return Result.Ok();
         }
 
         #endregion
