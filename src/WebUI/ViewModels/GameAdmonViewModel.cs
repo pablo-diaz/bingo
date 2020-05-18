@@ -166,5 +166,23 @@ namespace WebUI.ViewModels
 
             return Task.CompletedTask;
         }
+
+        public Task StartGame()
+        {
+            var startGameResult = this.GameModel.GameEntity.Start();
+            if(startGameResult.IsFailure)
+            {
+                this._toastService.ShowError(startGameResult.Error);
+                return Task.CompletedTask;
+            }
+
+            var currentGameIndex = this.Games.FindIndex(game => game.Name == this.GameModel.Name);
+            this.GameModel = GameModel.FromEntity(this.GameModel.GameEntity);
+            this.Games[currentGameIndex] = this.GameModel;
+
+            this._toastService.ShowSuccess("El juego ha empezado");
+
+            return Task.CompletedTask;
+        }
     }
 }

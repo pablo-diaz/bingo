@@ -14,6 +14,7 @@
             <tr>
                 <th>Nombre</th>
                 <th>Jugadores</th>
+                <th>Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -22,6 +23,7 @@
                 <tr>
                     <td><button type="button" class="btn btn-link" @onclick=@(() => admon.TransitionToEditGame(game))>@game.Name</button></td>
                     <td>@game.PlayerCount</td>
+                    <td>@game.State</td>
                 </tr>
             }
         </tbody>
@@ -46,9 +48,13 @@
 
 @if (admon.CanEditGameSectionBeShown)
 {
-    <h2>Juego: @admon.GameModel.Name</h2>
-    <button class="btn btn-primary" @onclick=admon.TransitionToNewPlayer>Crear nuevo jugador</button>
-    <button class="btn btn-secondary" @onclick=admon.TransitionToBrowsing>Regresar a listado de juegos</button>
+    <h2>Juego: @admon.GameModel.Name <span class="badge badge-info">@admon.GameModel.State</span></h2>
+    <button class="btn btn-outline-info" @onclick=admon.TransitionToBrowsing>Regresar a listado de juegos</button>
+    @if(admon.GameModel.CanStartButtonBeShown)
+    {
+        <button class="btn btn-primary" @onclick=admon.TransitionToNewPlayer>Crear nuevo jugador</button>
+        <button class="btn btn-success" @onclick=admon.StartGame>Iniciar juego</button>
+    }
 
     @foreach (var player in admon.GameModel.Players)
     {

@@ -14,6 +14,10 @@ namespace WebUI.Models.GameAdmon
 
         public int PlayerCount { get => Players.Count; }
 
+        public string State { get; set; }
+
+        public bool CanStartButtonBeShown { get => GameEntity.State == GameState.Draft; }
+
         public List<PlayerModel> Players { get; set; }
 
         public Game GameEntity { get; set; }
@@ -21,7 +25,13 @@ namespace WebUI.Models.GameAdmon
         public static GameModel FromEntity(Game entity) =>
             new GameModel { Name = entity.Name, 
                             Players = entity.Players.Select(player => PlayerModel.FromEntity(player)).ToList(),
-                            GameEntity = entity
+                            GameEntity = entity,
+                            State = entity.State switch {
+                                GameState.Draft => "Borrador [No Iniciado]",
+                                GameState.Started => "Iniciado [Jugando]",
+                                GameState.Finished => $"Finalizado [Ganador: {entity.Winner.Value.Name}]",
+                                _ => "Estado desconocido"
+                            }
             };
     }
 }
