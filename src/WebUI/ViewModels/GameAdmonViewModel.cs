@@ -17,8 +17,7 @@ namespace WebUI.ViewModels
             BROWSING,
             CREATING_GAME,
             EDITING_GAME,
-            CREATING_PLAYER,
-            EDITING_PLAYER
+            CREATING_PLAYER
         }
 
         private const short STANDARD_BALLS_VERSION_TOTAL = 75;
@@ -149,10 +148,21 @@ namespace WebUI.ViewModels
             return Task.CompletedTask;
         }
 
-        public Task EditPlayer(PlayerModel player)
+        public Task AddBoardToPlayer(PlayerModel player)
         {
-            this._currentState = State.EDITING_PLAYER;
-            this.PlayerModel = player;
+            var addBoardToPlayerResult = this.GameModel.GameEntity.AddBoardToPlayer(player.PlayerEntity);
+            if(addBoardToPlayerResult.IsFailure)
+            {
+                this._toastService.ShowError(addBoardToPlayerResult.Error);
+                return Task.CompletedTask;
+            }
+
+            var currentGameIndex = this.Games.FindIndex(game => game.Name == this.GameModel.Name);
+            var currentPlayerIndex = this.Games[currentGameIndex].Players.FindIndex(p => p.Name == player.Name);
+            var updatedPlayer = this.GameModel.GameEntity.Players.First(p => p.Name == player.Name);
+            this.Games[currentGameIndex].Players[currentPlayerIndex] = PlayerModel.FromEntity(updatedPlayer);
+
+            this._toastService.ShowSuccess($"Una tabla más ha sido exitosamente agregada a {player.Name}. Ahora tiene en total {updatedPlayer.Boards.Count} tablas");
 
             return Task.CompletedTask;
         }

@@ -49,23 +49,20 @@
     <h2>Juego: @admon.GameModel.Name</h2>
     <button class="btn btn-primary" @onclick=admon.TransitionToNewPlayer>Crear nuevo jugador</button>
     <button class="btn btn-secondary" @onclick=admon.TransitionToBrowsing>Regresar a listado de juegos</button>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th># Tablas</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var player in admon.GameModel.Players)
-            {
-                <tr>
-                    <td><button type="button" class="btn btn-link" @onclick=@(() => admon.EditPlayer(player))>@player.Name</button></td>
-                    <td>@player.BoardsCount</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+
+    @foreach (var player in admon.GameModel.Players)
+    {
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">@player.Name</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Login: @player.Login</h6>
+                <h6 class="card-subtitle mb-2 text-muted">Contraseña: @player.Password</h6>
+                <h6 class="card-subtitle mb-2 text-muted"><span class="badge badge-info">@player.BoardsCount tableros</span></h6>
+                <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
+                <button class="btn btn-primary" @onclick=@(() => admon.AddBoardToPlayer(player))>Agregar 1 Tabla</button>
+            </div>
+        </div>
+    }
 }
 
 @if (admon.CanNewPlayerSectionBeShown)
