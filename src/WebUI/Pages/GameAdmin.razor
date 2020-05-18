@@ -20,7 +20,7 @@
             @foreach (var game in admon.Games)
             {
                 <tr>
-                    <td><button type="button" class="btn btn-link" @onclick=@(() => admon.EditGame(game))>@game.Name</button></td>
+                    <td><button type="button" class="btn btn-link" @onclick=@(() => admon.TransitionToEditGame(game))>@game.Name</button></td>
                     <td>@game.PlayerCount</td>
                 </tr>
             }

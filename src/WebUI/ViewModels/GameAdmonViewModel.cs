@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 
 using Core;
@@ -6,7 +7,6 @@ using Core;
 using WebUI.Models.GameAdmon;
 
 using Blazored.Toast.Services;
-using System.Linq;
 
 namespace WebUI.ViewModels
 {
@@ -38,11 +38,11 @@ namespace WebUI.ViewModels
         public GameAdmonViewModel(IToastService toastService)
         {
             this._toastService = toastService;
+            this.Games = new List<GameModel>();
         }
 
         public Task InitializeComponent()
         {
-            this.Games = new List<GameModel>();
             this.TransitionToBrowsing();
 
             return Task.CompletedTask;
@@ -93,7 +93,7 @@ namespace WebUI.ViewModels
             return Task.CompletedTask;
         }
 
-        public Task EditGame(GameModel game)
+        public Task TransitionToEditGame(GameModel game)
         {
             this._currentState = State.EDITING_GAME;
             this.GameModel = game;
@@ -133,19 +133,18 @@ namespace WebUI.ViewModels
                 return Task.CompletedTask;
             }
 
-            var updatedGame = this.Games.First(game => game.Name == this.GameModel.Name);
-            updatedGame = GameModel.FromEntity(this.GameModel.GameEntity);
-            this.GameModel = updatedGame;
+            var updatingGameModelIndex = this.Games.FindIndex(game => game.Name == this.GameModel.Name);
+            this.Games[updatingGameModelIndex] = GameModel.FromEntity(this.GameModel.GameEntity);
 
             this._toastService.ShowSuccess("El jugador se ha creado exitosamente");
 
-            this.EditGame(this.GameModel);
+            this.TransitionToEditGame(this.Games[updatingGameModelIndex]);
             return Task.CompletedTask;
         }
 
         public Task CancelCreatingNewPlayer()
         {
-            EditGame(this.GameModel);
+            TransitionToEditGame(this.GameModel);
 
             return Task.CompletedTask;
         }
