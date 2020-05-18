@@ -9,7 +9,6 @@
 @if (admon.CanLandingBeShown)
 {
     <button class="btn btn-primary" @onclick=admon.TransitionToNewGame>Crear nuevo juego</button>
-
     <table class="table">
         <thead>
             <tr>
@@ -21,7 +20,7 @@
             @foreach (var game in admon.Games)
             {
                 <tr>
-                    <td>@game.Name</td>
+                    <td><button type="button" class="btn btn-link" @onclick=@(() => admon.EditGame(game))>@game.Name</button></td>
                     <td>@game.PlayerCount</td>
                 </tr>
             }
@@ -35,13 +34,65 @@
         <DataAnnotationsValidator />
         <div class="form-row">
             <div class="col">
-                <label for=admon.NewGameModel.Name>Nombre del Juego</label>
+                <label for=@admon.GameModel.Name>Nombre del Juego</label>
                 <InputText type="text" class="form-control" placeholder="Escriba un nombre del juego" @bind-Value=admon.GameModel.Name />
                 <ValidationMessage For="@(() => admon.GameModel.Name)" />
             </div>
         </div>
         <button type="reset" class="btn btn-secondary" @onclick=admon.CancelCreatingNewGame>Cancelar</button>
         <button type="submit" class="btn btn-primary">Crear juego</button>
+    </EditForm>
+}
+
+@if (admon.CanEditGameSectionBeShown)
+{
+    <h2>Juego: @admon.GameModel.Name</h2>
+    <button class="btn btn-primary" @onclick=admon.TransitionToNewPlayer>Crear nuevo jugador</button>
+    <button class="btn btn-secondary" @onclick=admon.TransitionToBrowsing>Regresar a listado de juegos</button>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th># Tablas</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var player in admon.GameModel.Players)
+            {
+                <tr>
+                    <td><button type="button" class="btn btn-link" @onclick=@(() => admon.EditPlayer(player))>@player.Name</button></td>
+                    <td>@player.BoardsCount</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (admon.CanNewPlayerSectionBeShown)
+{
+    <EditForm Model=admon.PlayerModel OnValidSubmit=admon.CreateNewPlayer>
+        <DataAnnotationsValidator />
+        <div class="form-row">
+            <div class="col">
+                <label for=@admon.PlayerModel.Name>Nombre del Jugador</label>
+                <InputText type="text" class="form-control" placeholder="Escriba un nombre del jugador" @bind-Value=admon.PlayerModel.Name />
+                <ValidationMessage For="@(() => admon.PlayerModel.Name)" />
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="col">
+                <label for=@admon.PlayerModel.Login>Login del Jugador</label>
+                <InputText type="text" class="form-control" placeholder="Escriba un login para el jugador" @bind-Value=admon.PlayerModel.Login />
+                <ValidationMessage For="@(() => admon.PlayerModel.Login)" />
+            </div>
+            <div class="col">
+                <label for=@admon.PlayerModel.Password>Contraseña del Jugador</label>
+                <InputText type="text" class="form-control" placeholder="Escriba una contraseña para el jugador" @bind-Value=admon.PlayerModel.Password />
+                <ValidationMessage For="@(() => admon.PlayerModel.Password)" />
+            </div>
+        </div>
+        <button type="reset" class="btn btn-secondary" @onclick=admon.CancelCreatingNewPlayer>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Crear jugador</button>
     </EditForm>
 }
 

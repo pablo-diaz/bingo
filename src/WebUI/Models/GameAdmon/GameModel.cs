@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Linq;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 using Core;
 
@@ -10,9 +12,16 @@ namespace WebUI.Models.GameAdmon
         [StringLength(100, ErrorMessage = "El nombre es muy largo. Intenta con uno más corto")]
         public string Name { get; set; }
 
-        public int PlayerCount { get; set; }
+        public int PlayerCount { get => Players.Count; }
+
+        public List<PlayerModel> Players { get; set; }
+
+        public Game GameEntity { get; set; }
 
         public static GameModel FromEntity(Game entity) =>
-            new GameModel { Name = entity.Name, PlayerCount = entity.Players.Count };
+            new GameModel { Name = entity.Name, 
+                            Players = entity.Players.Select(player => PlayerModel.FromEntity(player)).ToList(),
+                            GameEntity = entity
+            };
     }
 }
