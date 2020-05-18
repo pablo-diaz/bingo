@@ -8,6 +8,7 @@ using CSharpFunctionalExtensions;
 using FluentAssertions;
 
 using NUnit.Framework;
+using System;
 
 namespace UnitTests
 {
@@ -354,6 +355,29 @@ namespace UnitTests
             (var _, var __, var chosenBoardSetToWin, var ___) = SetWinnerPlayerForGame();
 
             chosenBoardSetToWin.State.Should().Be(BoardState.Winner);
+        }
+
+        [Test]
+        public void WhenRandomlyPlayingBall_ItWorks()
+        {
+            (var newGame, var _, var __) = CreateDefaultGameWithPlayers();
+            newGame.Start();
+            var randomizer = new Random();
+
+            do
+            {
+                var randomPlayBallResult = newGame.RadmonlyPlayBall(randomizer);
+                randomPlayBallResult.IsSuccess.Should().BeTrue();
+
+                newGame.BallsConfigured.Should().Contain(randomPlayBallResult.Value);
+                newGame.BallsPlayed.Should().Contain(randomPlayBallResult.Value);
+
+                var winnersResult = newGame.GetPotentialWinners();
+                winnersResult.IsSuccess.Should().BeTrue();
+                if (winnersResult.Value.Any())
+                    break;
+            } while (true);
+
         }
 
         #endregion

@@ -161,6 +161,30 @@ namespace Core
             return Result.Ok();
         }
 
+        public Result<Ball> RadmonlyPlayBall(Random randomizer)
+        {
+            var randomBallResult = GetRandomBall(randomizer);
+            if (randomBallResult.IsFailure)
+                return randomBallResult;
+            var playBallResult = PlayBall(randomBallResult.Value);
+            if (playBallResult.IsFailure)
+                return Result.Failure<Ball>(playBallResult.Error);
+            return randomBallResult;
+        }
+
+        public Result<List<(Player potentialWinner, List<Board> winningBoards)>> GetPotentialWinners()
+        {
+            if (State != GameState.Started)
+                return Result.Failure<List<(Player potentialWinner, List<Board> winningBoards)>>("Game is not started");
+
+            var winners = this._players
+                .Where(player => player.Boards.Any(board => board.State == BoardState.Winner))
+                .Select(player => (player, player.Boards.Where(board => board.State == BoardState.Winner).ToList()))
+                .ToList();
+
+            return Result.Ok(winners);
+        }
+
         #endregion
 
         #region Helpers
@@ -204,6 +228,19 @@ namespace Core
             }
 
             return Result.Failure<Board>("We were not able to randomly create a Board");
+        }
+
+        private Result<Ball> GetRandomBall(Random randomizer)
+        {
+            if (randomizer == null)
+                return Result.Failure<Ball>("Randomizer cannot be null");
+
+            var pendingBallsToBePlayed = this._ballsConfigured.Except(this._ballsPlayed).ToList();
+            if(pendingBallsToBePlayed.Count == 0)
+                return Result.Failure<Ball>("There are no more pending balls to be played");
+
+            var randomIndex = randomizer.Next(0, pendingBallsToBePlayed.Count - 1);
+            return Result.Ok(pendingBallsToBePlayed[randomIndex]);
         }
 
         #endregion
