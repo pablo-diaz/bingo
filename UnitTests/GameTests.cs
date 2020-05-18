@@ -351,20 +351,9 @@ namespace UnitTests
         [Test]
         public void WhenPlayingEachBallForAPlayersBoard_ThatBoardShouldBeSetAsWinner()
         {
-            (var newGame, var chosenPlayerSetToWin, var chosenBoardSetToWin, var otherPlayer) = SetWinnnerPlayerForGame();
+            (var _, var __, var chosenBoardSetToWin, var ___) = SetWinnerPlayerForGame();
 
             chosenBoardSetToWin.State.Should().Be(BoardState.Winner);
-
-            foreach(var player in new Player[] { chosenPlayerSetToWin, otherPlayer })
-            {
-                foreach(var board in player.Boards)
-                {
-                    if(board == chosenBoardSetToWin)
-                        board.State.Should().Be(BoardState.Winner);
-                    else
-                        board.State.Should().Be(BoardState.Playing);
-                }
-            }
         }
 
         #endregion
@@ -374,7 +363,7 @@ namespace UnitTests
         [Test]
         public void SettingTheRightWinner_Works()
         {
-            (var newGame, var chosenPlayerSetToWin, var _, var __) = SetWinnnerPlayerForGame();
+            (var newGame, var chosenPlayerSetToWin, var _, var __) = SetWinnerPlayerForGame();
 
             var result = newGame.SetWinner(chosenPlayerSetToWin);
 
@@ -387,7 +376,7 @@ namespace UnitTests
         [Test]
         public void WhenSettingTheWinner_IfProvindingWrongWinner_ItFails()
         {
-            (var newGame, var _, var __, var otherPlayer) = SetWinnnerPlayerForGame();
+            (var newGame, var _, var __, var otherPlayer) = SetWinnerPlayerForGame();
 
             var result = newGame.SetWinner(otherPlayer);
 
@@ -398,7 +387,7 @@ namespace UnitTests
         [Test]
         public void WhenSettingTheWinner_IfProvindingNullWinner_ItFails()
         {
-            (var newGame, var _, var __, var ___) = SetWinnnerPlayerForGame();
+            (var newGame, var _, var __, var ___) = SetWinnerPlayerForGame();
 
             var result = newGame.SetWinner(null);
 
@@ -409,7 +398,7 @@ namespace UnitTests
         [Test]
         public void WhenSettingTheWinner_IfProvindingNonExistingPlayer_ItFails()
         {
-            (var newGame, var _, var __, var ___) = SetWinnnerPlayerForGame();
+            (var newGame, var _, var __, var ___) = SetWinnerPlayerForGame();
 
             var result = newGame.SetWinner(CreateValidPlayer(withName: "Another name", withLogin: "login 4"));
 
@@ -454,7 +443,7 @@ namespace UnitTests
             return (newGame, player1, player2);
         }
 
-        private (Game game, Player winner, Board winningBoard, Player looser) SetWinnnerPlayerForGame()
+        private (Game game, Player winner, Board winningBoard, Player looser) SetWinnerPlayerForGame()
         {
             (var newGame, var chosenPlayerSetToWin, var otherPlayer) = CreateDefaultGameWithPlayers();
             newGame.Start();
