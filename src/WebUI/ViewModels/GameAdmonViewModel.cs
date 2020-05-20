@@ -8,6 +8,7 @@ using WebUI.Models.GameAdmon;
 
 using Blazored.Toast.Services;
 using System;
+using CSharpFunctionalExtensions;
 
 namespace WebUI.ViewModels
 {
@@ -191,10 +192,23 @@ namespace WebUI.ViewModels
         public Task PlayBall(BallModel ball)
         {
             var playBallResult = this.GameModel.GameEntity.PlayBall(ball.Entity);
-            if(playBallResult.IsFailure)
+            HandleBallPlayedResult(playBallResult);
+            return Task.CompletedTask;
+        }
+
+        public Task PlayBallRandomly()
+        {
+            var playBallResult = this.GameModel.GameEntity.RadmonlyPlayBall(this._randomizer);
+            HandleBallPlayedResult(playBallResult);
+            return Task.CompletedTask;
+        }
+
+        private void HandleBallPlayedResult(Result playBallResult)
+        {
+            if (playBallResult.IsFailure)
             {
                 this._toastService.ShowError(playBallResult.Error);
-                return Task.CompletedTask;
+                return;
             }
 
             var potentialWinners = this.GameModel.GameEntity.Players
@@ -202,16 +216,14 @@ namespace WebUI.ViewModels
                 .Select(player => player.Name)
                 .ToList();
 
-            if(potentialWinners.Count > 0)
+            if (potentialWinners.Count > 0)
                 this._toastService.ShowWarning($"Potenciales ganadores: {string.Join(" - ", potentialWinners)}");
 
             var currentGameIndex = this.Games.FindIndex(game => game.Name == this.GameModel.Name);
             this.GameModel = GameModel.FromEntity(this.GameModel.GameEntity);
             this.Games[currentGameIndex] = this.GameModel;
 
-            this._toastService.ShowSuccess($"{ball.Entity.Name} ha sido jugada exitosamente");
-
-            return Task.CompletedTask;
+            this._toastService.ShowSuccess("Bola ha sido jugada exitosamente");
         }
 
         public Task AddTestGames()

@@ -1,6 +1,8 @@
 ﻿@using WebUI.Models.GameAdmon
 
 <div style=@(CanItBeShown ? "" : "display: none;")>
+    <button class="btn btn-warning" @onclick=@(() => OnPlayRandomBallClick?.Invoke())>Jugar aleatoriamente</button>
+    <br /><br /><br />
     <table>
         <tbody>
         @foreach (var state in State)
@@ -28,4 +30,7 @@
 
     [Parameter]
     public Action<BallModel> OnBallClick { get; set; }
+
+    [Parameter]
+    public Action OnPlayRandomBallClick { get; set; }
 }
