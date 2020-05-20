@@ -183,13 +183,13 @@ namespace WebUI.ViewModels
             return Task.CompletedTask;
         }
 
-        public void PlayBall(BallModel ball)
+        public Task PlayBall(BallModel ball)
         {
             var playBallResult = this.GameModel.GameEntity.PlayBall(ball.Entity);
             if(playBallResult.IsFailure)
             {
                 this._toastService.ShowError(playBallResult.Error);
-                return;
+                return Task.CompletedTask;
             }
 
             var currentGameIndex = this.Games.FindIndex(game => game.Name == this.GameModel.Name);
@@ -197,6 +197,8 @@ namespace WebUI.ViewModels
             this.Games[currentGameIndex] = this.GameModel;
 
             this._toastService.ShowSuccess($"{ball.Entity.Name} ha sido jugada exitosamente");
+
+            return Task.CompletedTask;
         }
 
         public Task AddTestGames()
@@ -222,8 +224,9 @@ namespace WebUI.ViewModels
 
                 });
 
-            var updatingGameModelIndex = this.Games.FindIndex(game => game.Name == this.GameModel.Name);
-            this.Games[updatingGameModelIndex] = GameModel.FromEntity(this.GameModel.GameEntity);
+            var currentGameIndex = this.Games.FindIndex(game => game.Name == this.GameModel.Name);
+            this.GameModel = GameModel.FromEntity(this.GameModel.GameEntity);
+            this.Games[currentGameIndex] = this.GameModel;
 
             return Task.CompletedTask;
         }
