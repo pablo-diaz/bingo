@@ -57,7 +57,8 @@ namespace WebUI.Models.GameAdmon
                 .Select(ball => new BallModel { 
                     Letter = ball.Letter.ToString(), 
                     Number = ball.Number, 
-                    WasItPlayed = game.BallsPlayed.Contains(ball) 
+                    WasItPlayed = game.BallsPlayed.Contains(ball),
+                    Entity = ball
                 })
                 .OrderBy(ball => ball.Number)
                 .ToList();

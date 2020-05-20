@@ -9,7 +9,9 @@
                 <td>@state.Key</td>
                 @foreach (var ball in state.Value)
                 {
-                    <td><button class="btn btn-outline-primary" @onclick=@(() => OnBallClick?.Invoke(ball))>@ball.Number</button></td>
+                    <td><button disabled="@ball.WasItPlayed"
+                                class="btn @(ball.WasItPlayed ? "btn-success" : "btn-outline-primary")" 
+                                @onclick=@(() => OnBallClick?.Invoke(ball))>@ball.Number</button></td>
                 }
             </tr>
         }

@@ -57,7 +57,7 @@
     <button class="btn btn-success" @onclick=admon.StartGame style=@(admon.GameModel.IsItADraftGame ? "" : "display: none;")>Iniciar juego</button>
 
     <Players List=@admon.GameModel.Players AllowAddingBoards=@admon.GameModel.IsItADraftGame OnAddingBoard=@admon.AddBoardToPlayer />
-    <MasterBoard CanItBeShown=@(!admon.GameModel.IsItADraftGame) State=@admon.GameModel.MasterBoard />
+    <MasterBoard CanItBeShown=@(!admon.GameModel.IsItADraftGame) State=@admon.GameModel.MasterBoard OnBallClick=@admon.PlayBall />
 }
 
 @if (admon.CanNewPlayerSectionBeShown)
