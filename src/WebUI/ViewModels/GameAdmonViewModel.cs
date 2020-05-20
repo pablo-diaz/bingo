@@ -192,6 +192,14 @@ namespace WebUI.ViewModels
                 return Task.CompletedTask;
             }
 
+            var potentialWinners = this.GameModel.GameEntity.Players
+                .Where(player => player.Boards.Any(board => board.State == BoardState.Winner))
+                .Select(player => player.Name)
+                .ToList();
+
+            if(potentialWinners.Count > 0)
+                this._toastService.ShowWarning($"Potenciales ganadores: {string.Join(" - ", potentialWinners)}");
+
             var currentGameIndex = this.Games.FindIndex(game => game.Name == this.GameModel.Name);
             this.GameModel = GameModel.FromEntity(this.GameModel.GameEntity);
             this.Games[currentGameIndex] = this.GameModel;

@@ -11,9 +11,13 @@
                         <h6 class="card-subtitle mb-2">Login: @player.Login</h6>
                         <h6 class="card-subtitle mb-3">Contraseña: @player.Password</h6>
                         <h6 class="card-subtitle mb-4"><span class="badge badge-info">@player.BoardsCount tableros</span></h6>
-                        @if(AllowAddingBoards)
+                        @if (AllowAddingBoards)
                         {
                             <button class="btn btn-primary" @onclick=@(() => OnAddingBoard?.Invoke(player))>Agregar 1 Tabla</button>
+                        }
+                        @if (player.WinningBoardCount > 0)
+                        {
+                            <h6 class="card-subtitle mb-5"><span class="badge badge-warning">@player.WinningBoardCount tableros ganadores</span></h6>
                         }
                     </div>
                 </div>

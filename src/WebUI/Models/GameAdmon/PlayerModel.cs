@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
+using System.Linq;
 using Core;
 
 namespace WebUI.Models.GameAdmon
@@ -20,6 +20,8 @@ namespace WebUI.Models.GameAdmon
 
         public int BoardsCount { get; set; }
 
+        public int WinningBoardCount { get; set; }
+
         public Player PlayerEntity { get; set; }
 
         public static PlayerModel FromEntity(Player entity) =>
@@ -27,7 +29,8 @@ namespace WebUI.Models.GameAdmon
                               Login = entity.Security.Login, 
                               Password = entity.Security.Password, 
                               BoardsCount = entity.Boards.Count,
-                              PlayerEntity = entity
+                              PlayerEntity = entity,
+                              WinningBoardCount = entity.Boards.Count(board => board.State == BoardState.Winner)
             };
     }
 }
