@@ -2,7 +2,17 @@
 
 <div style=@(CanItBeShown ? "" : "display: none;")>
     <button class="btn btn-warning" @onclick=@(() => OnPlayRandomBallClick?.Invoke())>Jugar aleatoriamente</button>
-    <br /><br /><br />
+    <br /><br />
+    <div>
+        <h2>Bolas jugadas (en el orden en que fueron jugadas)</h2>
+        <div style="width: 400px; overflow-x: auto; white-space: nowrap;">
+        @foreach (var ball in PlayedBalls)
+        {
+            <button class="btn btn-outline-info">@ball.Entity.Name</button>
+        }
+        </div>
+    </div>
+    <br />
     <table>
         <tbody>
         @foreach (var state in State)
@@ -33,4 +43,7 @@
 
     [Parameter]
     public Action OnPlayRandomBallClick { get; set; }
+
+    [Parameter]
+    public List<BallModel> PlayedBalls { get; set; }
 }

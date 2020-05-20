@@ -23,6 +23,8 @@ namespace WebUI.Models.GameAdmon
 
         public Dictionary<string, List<BallModel>> MasterBoard { get; set; }
 
+        public List<BallModel> BallsPlayed { get; set; }
+
         public Game GameEntity { get; set; }
 
         public static GameModel FromEntity(Game entity) =>
@@ -35,7 +37,12 @@ namespace WebUI.Models.GameAdmon
                                 GameState.Finished => $"Finalizado [Ganador: {entity.Winner.Value.Name}]",
                                 _ => "Estado desconocido"
                             },
-                            MasterBoard = BuildMasterBoardState(entity)
+                            MasterBoard = BuildMasterBoardState(entity),
+                            BallsPlayed = entity.BallsPlayed.Select(ball => new BallModel { 
+                                                                    Letter = ball.Letter.ToString(), 
+                                                                    Number = ball.Number, 
+                                                                    Entity = ball })
+                                                            .ToList()
             };
 
         private static Dictionary<string, List<BallModel>> BuildMasterBoardState(Game game)
