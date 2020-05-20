@@ -148,13 +148,13 @@ namespace WebUI.ViewModels
             return Task.CompletedTask;
         }
 
-        public Task AddBoardToPlayer(PlayerModel player)
+        public void AddBoardToPlayer(PlayerModel player)
         {
             var addBoardToPlayerResult = this.GameModel.GameEntity.AddBoardToPlayer(player.PlayerEntity);
             if(addBoardToPlayerResult.IsFailure)
             {
                 this._toastService.ShowError(addBoardToPlayerResult.Error);
-                return Task.CompletedTask;
+                return;
             }
 
             var currentGameIndex = this.Games.FindIndex(game => game.Name == this.GameModel.Name);
@@ -163,8 +163,6 @@ namespace WebUI.ViewModels
             this.Games[currentGameIndex].Players[currentPlayerIndex] = PlayerModel.FromEntity(updatedPlayer);
 
             this._toastService.ShowSuccess($"Una tabla más ha sido exitosamente agregada a {player.Name}. Ahora tiene en total {updatedPlayer.Boards.Count} tablas");
-
-            return Task.CompletedTask;
         }
 
         public Task StartGame()

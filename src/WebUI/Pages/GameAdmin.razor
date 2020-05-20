@@ -1,6 +1,7 @@
 ﻿@page "/admin"
 
 @using WebUI.ViewModels
+@using WebUI.Components
 
 @inject GameAdmonViewModel admon
 
@@ -50,25 +51,10 @@
 {
     <h2>Juego: @admon.GameModel.Name <span class="badge badge-info">@admon.GameModel.State</span></h2>
     <button class="btn btn-outline-info" @onclick=admon.TransitionToBrowsing>Regresar a listado de juegos</button>
-    @if(admon.GameModel.CanStartButtonBeShown)
-    {
-        <button class="btn btn-primary" @onclick=admon.TransitionToNewPlayer>Crear nuevo jugador</button>
-        <button class="btn btn-success" @onclick=admon.StartGame>Iniciar juego</button>
-    }
+    <button class="btn btn-primary" @onclick=admon.TransitionToNewPlayer style=@(admon.GameModel.CanStartButtonBeShown ? "" : "display: none;")>Crear nuevo jugador</button>
+    <button class="btn btn-success" @onclick=admon.StartGame style=@(admon.GameModel.CanStartButtonBeShown ? "" : "display: none;")>Iniciar juego</button>
 
-    @foreach (var player in admon.GameModel.Players)
-    {
-        <div class="card" style="width: 18rem;">
-            <div class="card-body">
-                <h5 class="card-title">@player.Name</h5>
-                <h6 class="card-subtitle mb-2 text-muted">Login: @player.Login</h6>
-                <h6 class="card-subtitle mb-2 text-muted">Contraseña: @player.Password</h6>
-                <h6 class="card-subtitle mb-2 text-muted"><span class="badge badge-info">@player.BoardsCount tableros</span></h6>
-                <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
-                <button class="btn btn-primary" @onclick=@(() => admon.AddBoardToPlayer(player))>Agregar 1 Tabla</button>
-            </div>
-        </div>
-    }
+    <Players List=@admon.GameModel.Players AllowAddingBoards=admon.GameModel.CanStartButtonBeShown OnAddingBoard=admon.AddBoardToPlayer />
 }
 
 @if (admon.CanNewPlayerSectionBeShown)
