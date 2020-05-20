@@ -37,6 +37,8 @@ namespace WebUI.ViewModels
         public bool CanEditGameSectionBeShown => this._currentState == State.EDITING_GAME;
         public bool CanNewPlayerSectionBeShown => this._currentState == State.CREATING_PLAYER;
 
+        public bool IsThereAWinnerAlready => this.GameModel.GameEntity.Winner.HasValue;
+
         public GameAdmonViewModel(IToastService toastService)
         {
             this._toastService = toastService;
@@ -166,7 +168,7 @@ namespace WebUI.ViewModels
             var currentGameIndex = this.Games.FindIndex(game => game.Name == this.GameModel.Name);
             var currentPlayerIndex = this.Games[currentGameIndex].Players.FindIndex(p => p.Name == player.Name);
             var updatedPlayer = this.GameModel.GameEntity.Players.First(p => p.Name == player.Name);
-            this.Games[currentGameIndex].Players[currentPlayerIndex] = PlayerModel.FromEntity(updatedPlayer);
+            this.Games[currentGameIndex].Players[currentPlayerIndex] = PlayerModel.FromEntity(updatedPlayer, false);
 
             this._toastService.ShowSuccess($"Una tabla más ha sido exitosamente agregada a {player.Name}. Ahora tiene en total {updatedPlayer.Boards.Count} tablas");
         }
@@ -224,6 +226,22 @@ namespace WebUI.ViewModels
             this.Games[currentGameIndex] = this.GameModel;
 
             this._toastService.ShowSuccess("Bola ha sido jugada exitosamente");
+        }
+
+        public void SetWinner(PlayerModel player)
+        {
+            var setWinnerResult = this.GameModel.GameEntity.SetWinner(player.PlayerEntity);
+            if (setWinnerResult.IsFailure)
+            {
+                this._toastService.ShowError(setWinnerResult.Error);
+                return;
+            }
+
+            var currentGameIndex = this.Games.FindIndex(game => game.Name == this.GameModel.Name);
+            this.GameModel = GameModel.FromEntity(this.GameModel.GameEntity);
+            this.Games[currentGameIndex] = this.GameModel;
+
+            this._toastService.ShowSuccess($"Se ha establecido a {player.Name} como el Ganador del juego");
         }
 
         public Task AddTestGames()

@@ -1,14 +1,16 @@
 ﻿@using WebUI.Models.GameAdmon
 
 <div style=@(CanItBeShown ? "" : "display: none;")>
-    <button class="btn btn-warning" @onclick=@(() => OnPlayRandomBallClick?.Invoke())>Jugar aleatoriamente</button>
+    <button class="btn btn-warning" 
+            disabled=@IsThereAWinnerAlready
+            @onclick=@(() => OnPlayRandomBallClick?.Invoke())>Jugar aleatoriamente</button>
     <br /><br />
     <div>
         <h2>Bolas jugadas (en el orden en que fueron jugadas)</h2>
         <div style="width: 400px; overflow-x: auto; white-space: nowrap;">
         @foreach (var ball in PlayedBalls)
         {
-            <button class="btn btn-outline-info">@ball.Entity.Name</button>
+            <button disabled class="btn btn-outline-info">@ball.Entity.Name</button>
         }
         </div>
     </div>
@@ -21,7 +23,7 @@
                 <td>@state.Key</td>
                 @foreach (var ball in state.Value)
                 {
-                    <td><button disabled="@ball.WasItPlayed"
+                    <td><button disabled=@(ball.WasItPlayed || IsThereAWinnerAlready)
                                 class="btn @(ball.WasItPlayed ? "btn-success" : "btn-outline-primary")" 
                                 @onclick=@(() => OnBallClick?.Invoke(ball))>@ball.Number</button></td>
                 }
@@ -46,4 +48,7 @@
 
     [Parameter]
     public List<BallModel> PlayedBalls { get; set; }
+
+    [Parameter]
+    public bool IsThereAWinnerAlready { get; set; }
 }

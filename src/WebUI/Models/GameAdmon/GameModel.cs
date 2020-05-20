@@ -29,7 +29,7 @@ namespace WebUI.Models.GameAdmon
 
         public static GameModel FromEntity(Game entity) =>
             new GameModel { Name = entity.Name, 
-                            Players = entity.Players.Select(player => PlayerModel.FromEntity(player)).ToList(),
+                            Players = entity.Players.Select(player => PlayerModel.FromEntity(player, entity.Winner.HasValue ? player == entity.Winner.Value : false)).ToList(),
                             GameEntity = entity,
                             State = entity.State switch {
                                 GameState.Draft => "Borrador [No Iniciado]",
