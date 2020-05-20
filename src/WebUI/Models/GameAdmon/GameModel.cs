@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 using Core;
+using System;
 
 namespace WebUI.Models.GameAdmon
 {
@@ -16,9 +17,11 @@ namespace WebUI.Models.GameAdmon
 
         public string State { get; set; }
 
-        public bool CanStartButtonBeShown { get => GameEntity.State == GameState.Draft; }
+        public bool IsItADraftGame { get => GameEntity.State == GameState.Draft; }
 
         public List<PlayerModel> Players { get; set; }
+
+        public Dictionary<string, List<BallModel>> MasterBoard { get; set; }
 
         public Game GameEntity { get; set; }
 
@@ -31,7 +34,33 @@ namespace WebUI.Models.GameAdmon
                                 GameState.Started => "Iniciado [Jugando]",
                                 GameState.Finished => $"Finalizado [Ganador: {entity.Winner.Value.Name}]",
                                 _ => "Estado desconocido"
-                            }
+                            },
+                            MasterBoard = BuildMasterBoardState(entity)
             };
+
+        private static Dictionary<string, List<BallModel>> BuildMasterBoardState(Game game)
+        {
+            var result = new Dictionary<string, List<BallModel>>() {
+                { "B", GetBallsByLetter(game, BallLeter.B) },
+                { "I", GetBallsByLetter(game, BallLeter.I) },
+                { "N", GetBallsByLetter(game, BallLeter.N) },
+                { "G", GetBallsByLetter(game, BallLeter.G) },
+                { "O", GetBallsByLetter(game, BallLeter.O) }
+            };
+
+            return result;
+        }
+
+        private static List<BallModel> GetBallsByLetter(Game game, BallLeter letter)
+        {
+            return game.BallsConfigured.Where(ball => ball.Letter == letter)
+                .Select(ball => new BallModel { 
+                    Letter = ball.Letter.ToString(), 
+                    Number = ball.Number, 
+                    WasItPlayed = game.BallsPlayed.Contains(ball) 
+                })
+                .OrderBy(ball => ball.Number)
+                .ToList();
+        }
     }
 }

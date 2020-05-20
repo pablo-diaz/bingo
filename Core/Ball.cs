@@ -11,19 +11,19 @@ namespace Core
 
     public class Ball: ValueObject
     {
-        private short _number;
+        public short Number { get; }
         public BallLeter Letter { get; }
-        public string Name { get => $"{this.Letter}{this._number}"; }
+        public string Name { get => $"{this.Letter}{this.Number}"; }
 
         protected override IEnumerable<object> GetEqualityComponents()
         {
             yield return this.Letter;
-            yield return this._number;
+            yield return this.Number;
         }
 
         private Ball(short number, BallLeter letter)
         {
-            _number = number;
+            Number = number;
             Letter = letter;
         }
 

@@ -10,6 +10,7 @@
 @if (admon.CanLandingBeShown)
 {
     <button class="btn btn-primary" @onclick=admon.TransitionToNewGame>Crear nuevo juego</button>
+    <button class="btn btn-warning" @onclick=admon.AddTestGames>Agregar juegos de prueba</button>
     <table class="table">
         <thead>
             <tr>
@@ -51,10 +52,12 @@
 {
     <h2>Juego: @admon.GameModel.Name <span class="badge badge-info">@admon.GameModel.State</span></h2>
     <button class="btn btn-outline-info" @onclick=admon.TransitionToBrowsing>Regresar a listado de juegos</button>
-    <button class="btn btn-primary" @onclick=admon.TransitionToNewPlayer style=@(admon.GameModel.CanStartButtonBeShown ? "" : "display: none;")>Crear nuevo jugador</button>
-    <button class="btn btn-success" @onclick=admon.StartGame style=@(admon.GameModel.CanStartButtonBeShown ? "" : "display: none;")>Iniciar juego</button>
+    <button class="btn btn-primary" @onclick=admon.TransitionToNewPlayer style=@(admon.GameModel.IsItADraftGame ? "" : "display: none;")>Crear nuevo jugador</button>
+    <button class="btn btn-warning" @onclick=admon.AddTestPlayers style=@(admon.GameModel.IsItADraftGame ? "" : "display: none;")>Agregar jugadores de prueba</button>
+    <button class="btn btn-success" @onclick=admon.StartGame style=@(admon.GameModel.IsItADraftGame ? "" : "display: none;")>Iniciar juego</button>
 
-    <Players List=@admon.GameModel.Players AllowAddingBoards=admon.GameModel.CanStartButtonBeShown OnAddingBoard=admon.AddBoardToPlayer />
+    <Players List=@admon.GameModel.Players AllowAddingBoards=@admon.GameModel.IsItADraftGame OnAddingBoard=@admon.AddBoardToPlayer />
+    <MasterBoard CanItBeShown=@(!admon.GameModel.IsItADraftGame) State=@admon.GameModel.MasterBoard />
 }
 
 @if (admon.CanNewPlayerSectionBeShown)

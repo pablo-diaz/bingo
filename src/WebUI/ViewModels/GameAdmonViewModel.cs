@@ -182,5 +182,34 @@ namespace WebUI.ViewModels
 
             return Task.CompletedTask;
         }
+
+        public Task AddTestGames()
+        {
+            Enumerable.Range(1, 10)
+                .ToList()
+                .ForEach(testGameId => { 
+                    var newGameResult = Game.Create($"Game_{testGameId}", STANDARD_BALLS_VERSION_TOTAL, STANDARD_BALLS_VERSION_PER_BUCKET_COUNT);
+                    this.Games.Add(GameModel.FromEntity(newGameResult.Value));
+                });
+
+            return Task.CompletedTask;
+        }
+
+        public Task AddTestPlayers()
+        {
+            Enumerable.Range(1, 7)
+                .ToList()
+                .ForEach(testPlayerNumber => {
+                    var newPlayerSecurityResult = PlayerSecurity.Create($"login_{testPlayerNumber}", $"passwd_{testPlayerNumber}");
+                    var newPlayerResult = Player.Create($"Name_{testPlayerNumber}", newPlayerSecurityResult.Value);
+                    var addPlayerResult = this.GameModel.GameEntity.AddPlayer(newPlayerResult.Value);
+
+                });
+
+            var updatingGameModelIndex = this.Games.FindIndex(game => game.Name == this.GameModel.Name);
+            this.Games[updatingGameModelIndex] = GameModel.FromEntity(this.GameModel.GameEntity);
+
+            return Task.CompletedTask;
+        }
     }
 }

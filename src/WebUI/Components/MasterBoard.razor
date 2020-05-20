@@ -1,0 +1,29 @@
+﻿@using WebUI.Models.GameAdmon
+
+<div style=@(CanItBeShown ? "" : "display: none;")>
+    <table>
+        <tbody>
+        @foreach (var state in State)
+        {
+            <tr>
+                <td>@state.Key</td>
+                @foreach (var ball in state.Value)
+                {
+                    <td><button class="btn btn-outline-primary" @onclick=@(() => OnBallClick?.Invoke(ball))>@ball.Number</button></td>
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter]
+    public bool CanItBeShown { get; set; }
+
+    [Parameter]
+    public Dictionary<string, List<BallModel>> State { get; set; }
+
+    [Parameter]
+    public Action<BallModel> OnBallClick { get; set; }
+}
