@@ -124,7 +124,7 @@ namespace Core
             return Result.Ok();
         }
 
-        public Result<Board> AddBoardToPlayer(Player player)
+        public Result<Board> AddBoardToPlayer(Random randomizer, Player player)
         {
             if (State != GameState.Draft)
                 return Result.Failure<Board>("Game is in wrong state");
@@ -132,7 +132,7 @@ namespace Core
             if(!this._players.Contains(player))
                 return Result.Failure<Board>("Player is not part of Game");
 
-            var newBoardResult = TryCreatingNewBoard(tryUpToNTimes: 10);
+            var newBoardResult = TryCreatingNewBoard(randomizer, tryUpToNTimes: 10);
             if (newBoardResult.IsFailure)
                 return newBoardResult;
 
@@ -212,12 +212,12 @@ namespace Core
             return new BallLeter[] { BallLeter.B, BallLeter.I, BallLeter.N, BallLeter.G, BallLeter.O }[bucketIndex];
         }
 
-        private Result<Board> TryCreatingNewBoard(short tryUpToNTimes)
+        private Result<Board> TryCreatingNewBoard(Random randomizer, short tryUpToNTimes)
         {
             var tryCount = 1;
             while(tryCount <= tryUpToNTimes)
             {
-                var newBoardResult = Board.RandonmlyCreateFromBallSet(this._ballsConfigured, this.WithNBallsMaxPerBoardBucket);
+                var newBoardResult = Board.RandonmlyCreateFromBallSet(randomizer, this._ballsConfigured, this.WithNBallsMaxPerBoardBucket);
                 if (newBoardResult.IsFailure)
                     return newBoardResult;
 

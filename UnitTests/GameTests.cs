@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -8,12 +9,19 @@ using CSharpFunctionalExtensions;
 using FluentAssertions;
 
 using NUnit.Framework;
-using System;
 
 namespace UnitTests
 {
     public class GameTests
     {
+        private Random _randomizer;
+
+        [OneTimeSetUp]
+        public void SetUpForAllTests()
+        {
+            this._randomizer = new Random();
+        }
+
         #region New Game tests
 
         [Test]
@@ -209,7 +217,7 @@ namespace UnitTests
             var newPlayer = CreateValidPlayer();
             newGameResult.Value.AddPlayer(newPlayer);
 
-            var addBoardResult = newGameResult.Value.AddBoardToPlayer(newPlayer);
+            var addBoardResult = newGameResult.Value.AddBoardToPlayer(this._randomizer, newPlayer);
             addBoardResult.IsSuccess.Should().BeTrue();
             newPlayer.Boards.Should().NotBeEmpty()
                 .And.Contain(addBoardResult.Value);
@@ -221,7 +229,7 @@ namespace UnitTests
             (var newGame, var player1, var _) = CreateDefaultGameWithPlayers();
             newGame.Start();
             
-            var addBoardResult = newGame.AddBoardToPlayer(player1);
+            var addBoardResult = newGame.AddBoardToPlayer(this._randomizer, player1);
             addBoardResult.IsFailure.Should().BeTrue();
         }
 
@@ -233,7 +241,7 @@ namespace UnitTests
             var newPlayer2 = CreateValidPlayer(withName: "Player 02", withLogin: "login 01");
             newGameResult.Value.AddPlayer(newPlayer1);
 
-            var addBoardResult = newGameResult.Value.AddBoardToPlayer(newPlayer2);
+            var addBoardResult = newGameResult.Value.AddBoardToPlayer(this._randomizer, newPlayer2);
             addBoardResult.IsFailure.Should().BeTrue();
         }
 
@@ -459,9 +467,9 @@ namespace UnitTests
 
             if(shouldBoardsBeAdded)
             {
-                newGame.AddBoardToPlayer(player1);
-                newGame.AddBoardToPlayer(player1);
-                newGame.AddBoardToPlayer(player2);
+                newGame.AddBoardToPlayer(this._randomizer, player1);
+                newGame.AddBoardToPlayer(this._randomizer, player1);
+                newGame.AddBoardToPlayer(this._randomizer, player2);
             }
 
             return (newGame, player1, player2);

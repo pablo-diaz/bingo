@@ -73,7 +73,7 @@ namespace Core
 
         #region Builders
 
-        internal static Result<Board> RandonmlyCreateFromBallSet(HashSet<Ball> balls, int countPerColumn)
+        internal static Result<Board> RandonmlyCreateFromBallSet(Random randomizer, HashSet<Ball> balls, int countPerColumn)
         {
             if (balls == null || balls.Count() == 0)
                 return Result.Failure<Board>("You must provide a valid balls array");
@@ -81,7 +81,7 @@ namespace Core
             if(!AreAllRequiredBallsPresent(balls, countPerColumn))
                 return Result.Failure<Board>("There are pending ball types that must be provided");
 
-            HashSet<Ball> ballsToPlayWith = RandomlyCreateBallSet(balls, countPerColumn);
+            HashSet<Ball> ballsToPlayWith = RandomlyCreateBallSet(randomizer, balls, countPerColumn);
             return Result.Ok(new Board(ballsToPlayWith));
         }
 
@@ -89,11 +89,10 @@ namespace Core
 
         #region Helpers
 
-        private static HashSet<Ball> RandomlyCreateBallSet(ISet<Ball> balls, int countPerColumn)
+        private static HashSet<Ball> RandomlyCreateBallSet(Random randomGenerator, ISet<Ball> balls, int countPerColumn)
         {
             (var bColumn, var iColumn, var nColumn, var gColumn, var oColumn) = TransformIntoColumns(balls);
             
-            var randomGenerator = new Random();
             var result = new HashSet<Ball>();
 
             Randomize(bColumn, countPerColumn, randomGenerator).ForEach(ball => result.Add(ball));
@@ -113,7 +112,7 @@ namespace Core
             if (randomizedList.Count() == expectedCount)
                 return randomizedList;
 
-            var randomIndex = randomGenerator.Next(Math.Min(balls.Count, expectedCount));
+            var randomIndex = randomGenerator.Next(0, balls.Count - 1);
             var randomBall = balls[randomIndex];
             balls.RemoveAt(randomIndex);
             randomizedList.Add(randomBall);

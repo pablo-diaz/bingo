@@ -7,6 +7,7 @@ using Core;
 using WebUI.Models.GameAdmon;
 
 using Blazored.Toast.Services;
+using System;
 
 namespace WebUI.ViewModels
 {
@@ -24,6 +25,7 @@ namespace WebUI.ViewModels
         private const short STANDARD_BALLS_VERSION_PER_BUCKET_COUNT = 5;
         private readonly IToastService _toastService;
         private State _currentState;
+        private readonly Random _randomizer;
 
         public List<GameModel> Games { get; private set; }
         public GameModel GameModel { get; set; }
@@ -37,6 +39,7 @@ namespace WebUI.ViewModels
         public GameAdmonViewModel(IToastService toastService)
         {
             this._toastService = toastService;
+            this._randomizer = new Random();
             this.Games = new List<GameModel>();
         }
 
@@ -150,12 +153,14 @@ namespace WebUI.ViewModels
 
         public void AddBoardToPlayer(PlayerModel player)
         {
-            var addBoardToPlayerResult = this.GameModel.GameEntity.AddBoardToPlayer(player.PlayerEntity);
+            var addBoardToPlayerResult = this.GameModel.GameEntity.AddBoardToPlayer(this._randomizer, player.PlayerEntity);
             if(addBoardToPlayerResult.IsFailure)
             {
                 this._toastService.ShowError(addBoardToPlayerResult.Error);
                 return;
             }
+
+            //PrintBoard(addBoardToPlayerResult.Value);
 
             var currentGameIndex = this.Games.FindIndex(game => game.Name == this.GameModel.Name);
             var currentPlayerIndex = this.Games[currentGameIndex].Players.FindIndex(p => p.Name == player.Name);
@@ -237,6 +242,25 @@ namespace WebUI.ViewModels
             this.Games[currentGameIndex] = this.GameModel;
 
             return Task.CompletedTask;
+        }
+
+        private void PrintBoard(Board board)
+        {
+            Console.WriteLine("-> -> -> -> -> -> -> ->[GameAdmon] Board added: ");
+            var lastLetter = "";
+            board.BallsConfigured
+                .OrderBy(ball => ball.Number)
+                .ToList()
+                .ForEach(ball => {
+                    if(lastLetter != ball.Letter.ToString())
+                    {
+                        lastLetter = ball.Letter.ToString();
+                        Console.WriteLine();
+                        Console.Write($"{ball.Letter}: ");
+                    }
+                    Console.Write($"{ball.Number} ");
+                });
+            Console.WriteLine($"\n------------------- {DateTime.Now} -----------------------------");
         }
     }
 }
