@@ -153,6 +153,20 @@ namespace WebUI.Services
             return Result.Ok(gameFound);
         }
 
+        public Result<(bool loggedInSuccessfully, Player loggedInPlayer)> PerformLogIn(string inGameName, string login, string passwd)
+        {
+            inGameName = inGameName.Trim();
+            login = login.Trim().ToLower();
+            passwd = passwd.Trim();
+
+            var gameFound = this._games.FirstOrDefault(g => g.Name == inGameName);
+            if (gameFound == null)
+                return Result.Failure<(bool, Player)>("Game has not been found by its name");
+
+            var playerFound = gameFound.Players.FirstOrDefault(player => player.Security.Login == login && player.Security.Password == passwd);
+            return Result.Ok<(bool, Player)>((playerFound != null, playerFound));
+        }
+
         public IReadOnlyCollection<Game> GetAllGames() =>
             this._games
                 .OrderBy(game => game.Name)
@@ -165,12 +179,6 @@ namespace WebUI.Services
                 .OrderBy(game => game.Name)
                 .ToList()
                 .AsReadOnly();
-
-        public void UpdateGame(Game game)
-        {
-            var gameFoundAtIndex = this._games.FindIndex(g => g.Name == game.Name);
-            this._games[gameFoundAtIndex] = game;
-        }
 
         private void PrintGames()
         {
