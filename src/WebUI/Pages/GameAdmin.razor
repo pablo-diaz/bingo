@@ -58,7 +58,7 @@
 
     <Players List=@admon.GameModel.Players
              AllowAddingBoards=@admon.GameModel.IsItADraftGame
-             OnAddingBoard=@admon.AddBoardToPlayer
+             OnAddingBoard=@(player => { admon.AddBoardToPlayer(player); UpdateUI(); })
              OnSettingWinner=@(winner => { admon.SetWinner(winner); UpdateUI(); })
              IsThereAWinnerAlready=@admon.IsThereAWinnerAlready />
 

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
+using WebUI.Services;
 using WebUI.ViewModels;
 
 namespace WebUI
@@ -25,7 +25,10 @@ namespace WebUI
             services.AddServerSideBlazor();
 
             services.AddBlazoredToast();
+
             services.AddTransient<GameAdmonViewModel>();
+            services.AddSingleton<GamingComunication>();
+            services.AddTransient<GamePlayerViewModel>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

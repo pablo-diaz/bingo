@@ -1,0 +1,18 @@
+@page "/gameplayer"
+
+@using WebUI.ViewModels
+
+@inject GamePlayerViewModel player
+
+<h1>Selecciona el Juego al que quieres unirte</h1>
+
+<div class="container-fluid">
+    <div class="row">
+        @foreach (var game in player.PlayableGames)
+        {
+            <div class="col">
+                <button class="btn btn-outline-primary">@game.Name</button>
+            </div>
+        }
+    </div>
+</div>
