@@ -8,6 +8,7 @@ using WebUI.Infrastructure;
 using Core;
 
 using CSharpFunctionalExtensions;
+using WebUI.Services.DTOs;
 
 namespace WebUI.Services
 {
@@ -164,7 +165,7 @@ namespace WebUI.Services
             return Result.Ok(gameFound);
         }
 
-        public Result<(bool loggedInSuccessfully, Player loggedInPlayer, string jwtToken)> 
+        public Result<(bool loggedInSuccessfully, LoginResultDTO loginResult)> 
             PerformLogIn(string inGameName, string login, string passwd)
         {
             inGameName = inGameName.Trim();
@@ -173,11 +174,17 @@ namespace WebUI.Services
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == inGameName);
             if (gameFound == null)
-                return Result.Failure<(bool, Player, string)>("Game has not been found by its name");
+                return Result.Failure<(bool, LoginResultDTO)>("Game has not been found by its name");
 
-            var playerFound = gameFound.Players.FirstOrDefault(player => player.Security.Login == login && player.Security.Password == passwd);
+            var playerFound = gameFound.Players
+                .FirstOrDefault(player => player.Security.Login == login && player.Security.Password == passwd);
+
+            if(playerFound == null)
+                return Result.Ok<(bool, LoginResultDTO)>((false, null));
+
             var jwtPlayerToken = this._bingoSecurity.CreateJWTTokenForPlayer(inGameName);
-            return Result.Ok<(bool, Player, string)>((playerFound != null, playerFound, jwtPlayerToken));
+            var loginResult = new LoginResultDTO(playerFound, gameFound.BallsPlayed, jwtPlayerToken);
+            return Result.Ok<(bool, LoginResultDTO)>((true, loginResult));
         }
 
         public IReadOnlyCollection<Game> GetAllGames() =>

@@ -20,7 +20,7 @@ namespace WebUI.Infrastructure
 
         public async Task SendBallPlayedMessage(string inGameName, BallDTO ballPlayed)
         {
-            await Clients.Group(inGameName).SendAsync("OnBallPlayedMessage", inGameName, ballPlayed);
+            await Clients.Group(inGameName).SendAsync("OnBallPlayedMessage", ballPlayed);
         }
     }
 }

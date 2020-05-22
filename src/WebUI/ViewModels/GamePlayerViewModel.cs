@@ -79,16 +79,17 @@ namespace WebUI.ViewModels
                 return;
             }
 
-            (var authSuccess, var player, var jwtPlayerToken) = loginResult.Value;
+            (var authSuccess, var resultInfo) = loginResult.Value;
             if(!authSuccess)
             {
                 this._toastService.ShowError("Usuario o Contraseña equivocadas. Intenta nuevamente");
                 return;
             }
 
-            await this.StartBingoHubConnection(jwtPlayerToken);
+            DisplayBallsPlayedRecentlyBeforeLoggin(resultInfo.BallsPlayedRecently);
+            await this.StartBingoHubConnection(resultInfo.JWTPlayerToken);
 
-            this.PlayerModel = PlayerModel.FromEntity(player);
+            this.PlayerModel = PlayerModel.FromEntity(resultInfo.LoggedInPlayer);
             this._currentState = State.LOGGED_IN;
             return;
         }
@@ -107,12 +108,24 @@ namespace WebUI.ViewModels
                 })
                 .Build();
 
-            this._bingoHubConnection.On<string, Infrastructure.DTOs.BallDTO>("OnBallPlayedMessage", (inGameName, ballPlayed) =>
+            this._bingoHubConnection.On<Infrastructure.DTOs.BallDTO>("OnBallPlayedMessage", ballPlayed =>
             {
-                Console.WriteLine($"-> -> -> -> -> -> -> -> -> ->[GamePlayerViewModel] Message from Server -> 'OnBallPlayedMessage' - Ball '{ballPlayed.Name}' played In Game '{inGameName}'");
+                OnBallPlayed(ballPlayed);
             });
 
             await this._bingoHubConnection.StartAsync();
+        }
+
+        private void DisplayBallsPlayedRecentlyBeforeLoggin(IReadOnlyCollection<Infrastructure.DTOs.BallDTO> balls)
+        {
+            Console.WriteLine($"The following {balls.Count} balls have been played already: ");
+            foreach (var ball in balls)
+                OnBallPlayed(ball);
+        }
+
+        private void OnBallPlayed(Infrastructure.DTOs.BallDTO ball)
+        {
+            Console.WriteLine($"Ball {ball.Name} has been played");
         }
     }
 }
