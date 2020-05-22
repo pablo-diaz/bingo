@@ -7,7 +7,7 @@
 @if(player.CanSelectGameSectionBeShown)
 {
     <h1 style=@(player.PlayableGames.Count > 0 ? "" : "display: none;")>Selecciona el Juego al que quieres unirte</h1>
-    <h1 style=@(player.PlayableGames.Count == 0 ? "" : "display: none;")>No existen juegos iniciados aun. Habla con el admon. del juego, para que inicie uno</h1>
+    <h1 style=@(player.PlayableGames.Count == 0 ? "" : "display: none;")>No existen juegos iniciados aún. Habla con el administrador del juego, para que inicie uno</h1>
     <div class="container-fluid">
         <div class="row">
             @foreach (var game in player.PlayableGames)
@@ -22,24 +22,24 @@
 
 @if(player.CanAuthenticateInGameSectionBeShown)
 {
-    <h1>Ahora por favor, cuentanos quien eres tu, dentro del juego "@player.GameSelected.Name"</h1>
+    <h1>Ahora por favor, cuéntanos quién eres tú, dentro del juego "@player.GameSelected.Name"</h1>
     <EditForm Model=player.LoginModel OnValidSubmit=@(async () => await player.Login())>
         <DataAnnotationsValidator />
         <div class="form-row">
             <div class="col">
                 <label for=@player.LoginModel.Login>Usuario</label>
-                <InputText type="text" class="form-control" placeholder="Escriba el Login que te asignaron en este juego" @bind-Value=player.LoginModel.Login />
+                <InputText type="text" class="form-control" placeholder="Escribe el Usuario que te asignaron en este juego" @bind-Value=player.LoginModel.Login />
                 <ValidationMessage For="@(() => player.LoginModel.Login)" />
             </div>
         </div>
         <div class="form-row">
             <div class="col">
-                <label for=@player.LoginModel.Passwd>Contrase�a</label>
-                <InputText type="password" class="form-control" placeholder="Escriba la Contrase�a que te asignaron en este juego" @bind-Value=player.LoginModel.Passwd />
+                <label for=@player.LoginModel.Passwd>Contraseña</label>
+                <InputText type="password" class="form-control" placeholder="Escribe la Contraseña que te asignaron en este juego" @bind-Value=player.LoginModel.Passwd />
                 <ValidationMessage For="@(() => player.LoginModel.Passwd)" />
             </div>
         </div>
-        <button type="reset" class="btn btn-secondary" @onclick=player.CancelLogin>Regresar a la selecci�n de juegos</button>
+        <button type="reset" class="btn btn-secondary" @onclick=player.CancelLogin>Regresar a la selección de juegos</button>
         <button type="submit" class="btn btn-primary">Ingresar al juego</button>
     </EditForm>
 }
