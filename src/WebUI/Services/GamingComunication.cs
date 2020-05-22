@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Collections.Generic;
+
+using WebUI.Infrastructure;
 
 using Core;
 
@@ -15,11 +18,15 @@ namespace WebUI.Services
 
         private readonly List<Game> _games;
         private readonly Random _randomizer;
+        private readonly BingoHub _bingoHub;
+        private readonly BingoSecurity _bingoSecurity;
 
-        public GamingComunication()
+        public GamingComunication(BingoHub bingoHub, BingoSecurity bingoSecurity)
         {
             this._games = new List<Game>();
             this._randomizer = new Random();
+            this._bingoHub = bingoHub;
+            this._bingoSecurity = bingoSecurity;
         }
 
         public Result AddStandardGame(string name)
@@ -99,7 +106,7 @@ namespace WebUI.Services
             return Result.Ok(gameFound);
         }
 
-        public Result<Game> PlayBall(string inGameName, string ballName)
+        public async Task<Result<Game>> PlayBall(string inGameName, string ballName)
         {
             inGameName = inGameName.Trim();
 
@@ -114,6 +121,8 @@ namespace WebUI.Services
             var playBallResult = gameFound.PlayBall(ballFound);
             if (playBallResult.IsFailure)
                 return Result.Failure<Game>(playBallResult.Error);
+
+            await this._bingoHub.SendBallPlayedMessage(inGameName, new Infrastructure.DTOs.BallDTO { Name = ballFound.Name });
 
             return Result.Ok(gameFound);
         }
@@ -153,7 +162,8 @@ namespace WebUI.Services
             return Result.Ok(gameFound);
         }
 
-        public Result<(bool loggedInSuccessfully, Player loggedInPlayer)> PerformLogIn(string inGameName, string login, string passwd)
+        public Result<(bool loggedInSuccessfully, Player loggedInPlayer, string jwtToken)> 
+            PerformLogIn(string inGameName, string login, string passwd)
         {
             inGameName = inGameName.Trim();
             login = login.Trim().ToLower();
@@ -161,10 +171,11 @@ namespace WebUI.Services
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == inGameName);
             if (gameFound == null)
-                return Result.Failure<(bool, Player)>("Game has not been found by its name");
+                return Result.Failure<(bool, Player, string)>("Game has not been found by its name");
 
             var playerFound = gameFound.Players.FirstOrDefault(player => player.Security.Login == login && player.Security.Password == passwd);
-            return Result.Ok<(bool, Player)>((playerFound != null, playerFound));
+            var jwtPlayerToken = this._bingoSecurity.CreateJWTTokenForPlayer(inGameName);
+            return Result.Ok<(bool, Player, string)>((playerFound != null, playerFound, jwtPlayerToken));
         }
 
         public IReadOnlyCollection<Game> GetAllGames() =>

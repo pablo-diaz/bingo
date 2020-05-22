@@ -23,7 +23,7 @@
 @if(player.CanAuthenticateInGameSectionBeShown)
 {
     <h1>Ahora por favor, cuentanos quien eres tu, dentro del juego "@player.GameSelected.Name"</h1>
-    <EditForm Model=player.LoginModel OnValidSubmit=player.Login>
+    <EditForm Model=player.LoginModel OnValidSubmit=@(async () => await player.Login())>
         <DataAnnotationsValidator />
         <div class="form-row">
             <div class="col">
@@ -46,7 +46,7 @@
 
 @if(player.CanLoggedInSectionBeShown)
 {
-    <h1>You are Logged in</h1>
+    <h1>Hola @player.PlayerModel.Name Bienvenido al juego @player.GameSelected.Name</h1>
 }
 
 @code {

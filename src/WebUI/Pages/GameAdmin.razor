@@ -64,7 +64,7 @@
 
     <MasterBoard CanItBeShown=@(!admon.GameModel.IsItADraftGame) 
                  State=@admon.GameModel.MasterBoard 
-                 OnBallClick=@(ball => { admon.PlayBall(ball); UpdateUI(); })
+                 OnBallClick=@(async ball => { await admon.PlayBall(ball); UpdateUI(); })
                  OnPlayRandomBallClick=@(() => { admon.PlayBallRandomly(); UpdateUI(); })
                  PlayedBalls=@admon.GameModel.BallsPlayed
                  IsThereAWinnerAlready=@admon.IsThereAWinnerAlready />
