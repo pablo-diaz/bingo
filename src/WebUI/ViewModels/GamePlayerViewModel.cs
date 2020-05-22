@@ -28,6 +28,7 @@ namespace WebUI.ViewModels
         private readonly NavigationManager _navigationManager;
         private State _currentState;
         private HubConnection _bingoHubConnection;
+        private Action _triggerUIRefresh;
 
         public List<GameModel> PlayableGames => 
             this._gamingComunication.GetPlayableGames()
@@ -50,8 +51,9 @@ namespace WebUI.ViewModels
             this._navigationManager = navigationManager;
         }
 
-        public Task InitializeComponent()
+        public Task InitializeComponent(Action triggerUIRefresh)
         {
+            this._triggerUIRefresh = triggerUIRefresh;
             this.TransitionToSelectingGame();
             return Task.CompletedTask;
         }
@@ -132,6 +134,11 @@ namespace WebUI.ViewModels
                 return;
 
             this.PlayedBalls.Add(ball);
+
+            if(this.PlayerModel != null)
+                this.PlayerModel.AdjustBoardsState(ball);
+
+            this._triggerUIRefresh?.Invoke();
         }
     }
 }

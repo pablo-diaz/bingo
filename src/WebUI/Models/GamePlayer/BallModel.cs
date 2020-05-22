@@ -6,5 +6,7 @@
         public short Number { get; set; }
         public bool IsItPossibleToSelect { get; set; }
         public bool HasPlayerSelectedIt { get; set; }
+
+        public string Name => $"{Leter}{Number}";
     }
 }

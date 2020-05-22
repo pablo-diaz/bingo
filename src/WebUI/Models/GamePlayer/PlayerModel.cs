@@ -10,6 +10,16 @@ namespace WebUI.Models.GamePlayer
 
         public List<BoardModel> Boards { get; set; }
 
+        public void AdjustBoardsState(Infrastructure.DTOs.BallDTO newBall)
+        {
+            foreach(var board in Boards)
+            {
+                var ballFound = board.Balls.FirstOrDefault(ball => ball.Name == newBall.Name);
+                if (ballFound != null)
+                    ballFound.IsItPossibleToSelect = true;
+            }
+        }
+
         public static PlayerModel FromEntity(Player entity) =>
             new PlayerModel { 
                 Name = entity.Name, 

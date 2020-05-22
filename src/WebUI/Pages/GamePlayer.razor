@@ -74,6 +74,11 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
-        await player.InitializeComponent();
+        await player.InitializeComponent(() => UpdateUI());
+    }
+
+    private void UpdateUI()
+    {
+        StateHasChanged();
     }
 }
