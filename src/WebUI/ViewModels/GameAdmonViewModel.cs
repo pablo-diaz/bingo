@@ -10,6 +10,7 @@ using WebUI.Services;
 using Blazored.Toast.Services;
 
 using CSharpFunctionalExtensions;
+using Microsoft.Extensions.Configuration;
 
 namespace WebUI.ViewModels
 {
@@ -17,6 +18,7 @@ namespace WebUI.ViewModels
     {
         public enum State
         {
+            AUTHENTICATING_ADMIN,
             BROWSING,
             CREATING_GAME,
             EDITING_GAME,
@@ -25,8 +27,10 @@ namespace WebUI.ViewModels
 
         private readonly IToastService _toastService;
         private readonly GamingComunication _gamingComunication;
+        private readonly IConfiguration _configuration;
         private State _currentState;
 
+        public AdminLoginModel AdminLoginModel { get; set; }
         public GameModel GameModel { get; set; }
         public PlayerModel PlayerModel { get; set; }
 
@@ -34,6 +38,7 @@ namespace WebUI.ViewModels
             .Select(game => GameModel.FromEntity(game))
             .ToList();
 
+        public bool CanAuthenticatingAdminSectionBeShown => this._currentState == State.AUTHENTICATING_ADMIN;
         public bool CanLandingBeShown => this._currentState == State.BROWSING;
         public bool CanNewGameSectionBeShown => this._currentState == State.CREATING_GAME;
         public bool CanEditGameSectionBeShown => this._currentState == State.EDITING_GAME;
@@ -41,17 +46,26 @@ namespace WebUI.ViewModels
 
         public bool IsThereAWinnerAlready => this.GameModel.GameEntity.Winner.HasValue;
 
-        public GameAdmonViewModel(IToastService toastService, GamingComunication gamingComunication)
+        public GameAdmonViewModel(IToastService toastService, GamingComunication gamingComunication,
+            IConfiguration configuration)
         {
             this._toastService = toastService;
             this._gamingComunication = gamingComunication;
+            this._configuration = configuration;
         }
 
         public Task InitializeComponent()
         {
-            this.TransitionToBrowsing();
-
+            this.TransitionToAuthenticateAdmin();
             return Task.CompletedTask;
+        }
+
+        private void TransitionToAuthenticateAdmin()
+        {
+            this._currentState = State.AUTHENTICATING_ADMIN;
+            this.AdminLoginModel = new AdminLoginModel();
+            this.GameModel = null;
+            this.PlayerModel = null;
         }
 
         public void TransitionToBrowsing()
@@ -65,6 +79,20 @@ namespace WebUI.ViewModels
         {
             this._currentState = State.CREATING_GAME;
             this.GameModel = new GameModel();
+            return Task.CompletedTask;
+        }
+
+        public Task AuthenticateAdmin()
+        {
+            var adminPassword = this._configuration["Bingo.Security:AdminPassword"];
+            if(adminPassword != this.AdminLoginModel.Passwd.Trim())
+            {
+                this._toastService.ShowError("Contraseña equivocada. Intenta nuevamente");
+                return Task.CompletedTask;
+            }
+
+            this.TransitionToBrowsing();
+
             return Task.CompletedTask;
         }
 
