@@ -10,6 +10,7 @@ using Blazored.Toast.Services;
 
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Components;
+using WebUI.Infrastructure.DTOs;
 
 namespace WebUI.ViewModels
 {
@@ -35,6 +36,7 @@ namespace WebUI.ViewModels
         public GameModel GameSelected { get; set; }
         public LoginModel LoginModel { get; set; }
         public PlayerModel PlayerModel { get; set; }
+        public List<BallDTO> PlayedBalls { get; private set; }
 
         public bool CanSelectGameSectionBeShown => this._currentState == State.SELECTING_GAME;
         public bool CanAuthenticateInGameSectionBeShown => this._currentState == State.AUTHENTICATING_IN_GAME;
@@ -60,6 +62,7 @@ namespace WebUI.ViewModels
             this.GameSelected = null;
             this.LoginModel = null;
             this.PlayerModel = null;
+            this.PlayedBalls = null;
         }
 
         public Task SelectGame(GameModel game)
@@ -116,16 +119,19 @@ namespace WebUI.ViewModels
             await this._bingoHubConnection.StartAsync();
         }
 
-        private void DisplayBallsPlayedRecentlyBeforeLoggin(IReadOnlyCollection<Infrastructure.DTOs.BallDTO> balls)
+        private void DisplayBallsPlayedRecentlyBeforeLoggin(IReadOnlyCollection<BallDTO> balls)
         {
-            Console.WriteLine($"The following {balls.Count} balls have been played already: ");
+            this.PlayedBalls = new List<BallDTO>();
             foreach (var ball in balls)
                 OnBallPlayed(ball);
         }
 
-        private void OnBallPlayed(Infrastructure.DTOs.BallDTO ball)
+        private void OnBallPlayed(BallDTO ball)
         {
-            Console.WriteLine($"Ball {ball.Name} has been played");
+            if (this.PlayedBalls.Any(b => b.Name == ball.Name))
+                return;
+
+            this.PlayedBalls.Add(ball);
         }
     }
 }

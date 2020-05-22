@@ -16,8 +16,13 @@
             <tr>
                 @for(var columnIndex = 0; columnIndex < ArrangedBalls.GetLength(1); columnIndex++)
                 {
+                    var ballInfo = ArrangedBalls[rowIndex, columnIndex];
                     <td>
-                        <button class="btn btn-outline-primary">@ArrangedBalls[rowIndex, columnIndex].Number</button>
+                        <button disabled=@(ballInfo.HasPlayerSelectedIt) 
+                                class="btn @(GetButtonClassForState(ballInfo))"
+                                @onclick=@(() => BallClicked(ballInfo))>
+                                    @ArrangedBalls[rowIndex, columnIndex].Number
+                        </button>
                     </td>
                 }
             </tr>
@@ -47,6 +52,24 @@
             this.ArrangedBalls[rowIndex, 2] = nColumn[rowIndex];
             this.ArrangedBalls[rowIndex, 3] = gColumn[rowIndex];
             this.ArrangedBalls[rowIndex, 4] = oColumn[rowIndex];
+        }
+    }
+
+    private string GetButtonClassForState(BallModel ballInfo)
+    {
+        if (ballInfo.HasPlayerSelectedIt) return "btn-success";
+
+        if (ballInfo.IsItPossibleToSelect) return "btn-outline-danger";
+
+        return "btn-outline-primary";
+    }
+
+    private void BallClicked(BallModel ballInfo)
+    {
+        if(ballInfo.IsItPossibleToSelect)
+        {
+            ballInfo.HasPlayerSelectedIt = true;
+            StateHasChanged();
         }
     }
 }

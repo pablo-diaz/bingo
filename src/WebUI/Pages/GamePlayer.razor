@@ -5,7 +5,7 @@
 
 @inject GamePlayerViewModel player
 
-@if(player.CanSelectGameSectionBeShown)
+@if (player.CanSelectGameSectionBeShown)
 {
     <h1 style=@(player.PlayableGames.Count > 0 ? "" : "display: none;")>Selecciona el Juego al que quieres unirte</h1>
     <h1 style=@(player.PlayableGames.Count == 0 ? "" : "display: none;")>No existen juegos iniciados aún. Habla con el administrador del juego, para que inicie uno</h1>
@@ -21,7 +21,7 @@
     </div>
 }
 
-@if(player.CanAuthenticateInGameSectionBeShown)
+@if (player.CanAuthenticateInGameSectionBeShown)
 {
     <h1>Ahora por favor, cuéntanos quién eres tú, dentro del juego "@player.GameSelected.Name"</h1>
     <EditForm Model=player.LoginModel OnValidSubmit=@(async () => await player.Login())>
@@ -45,18 +45,28 @@
     </EditForm>
 }
 
-@if(player.CanLoggedInSectionBeShown)
+@if (player.CanLoggedInSectionBeShown)
 {
     <h1>Hola @player.PlayerModel.Name Bienvenido al juego @player.GameSelected.Name</h1>
 
+    <div>
+        <h2>Bolas jugadas (en el orden en que fueron jugadas)</h2>
+        <div style="width: 400px; overflow-x: auto; white-space: nowrap;">
+            @foreach (var ball in player.PlayedBalls)
+            {
+                <button disabled class="btn btn-outline-info">@ball.Name</button>
+            }
+        </div>
+    </div>
+
     <div class="container-fluid">
         <div class="row">
-        @foreach(var board in player.PlayerModel.Boards)
-        {
-            <div class="col">
-                <PlayerBoard Balls=@board.Balls />
-            </div>
-        }
+            @foreach (var board in player.PlayerModel.Boards)
+            {
+                <div class="col">
+                    <PlayerBoard Balls=@board.Balls />
+                </div>
+            }
         </div>
     </div>
 }
