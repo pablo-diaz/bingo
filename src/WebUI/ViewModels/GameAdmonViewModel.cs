@@ -167,11 +167,10 @@ namespace WebUI.ViewModels
             HandleBallPlayedResult(playBallResult);
         }
 
-        public Task PlayBallRandomly()
+        public async Task PlayBallRandomly()
         {
-            var playBallResult = this._gamingComunication.RandomlyPlayBall(this.GameModel.Name);
+            var playBallResult = await this._gamingComunication.RandomlyPlayBall(this.GameModel.Name);
             HandleBallPlayedResult(playBallResult);
-            return Task.CompletedTask;
         }
 
         private void HandleBallPlayedResult(Result<Game> playBallResult)

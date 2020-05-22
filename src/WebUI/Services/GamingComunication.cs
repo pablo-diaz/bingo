@@ -127,7 +127,7 @@ namespace WebUI.Services
             return Result.Ok(gameFound);
         }
 
-        public Result<Game> RandomlyPlayBall(string inGameName)
+        public async Task<Result<Game>> RandomlyPlayBall(string inGameName)
         {
             inGameName = inGameName.Trim();
 
@@ -138,6 +138,8 @@ namespace WebUI.Services
             var playBallResult = gameFound.RadmonlyPlayBall(this._randomizer);
             if (playBallResult.IsFailure)
                 return Result.Failure<Game>(playBallResult.Error);
+
+            await this._bingoHub.SendBallPlayedMessage(inGameName, new Infrastructure.DTOs.BallDTO { Name = playBallResult.Value.Name });
 
             return Result.Ok(gameFound);
         }

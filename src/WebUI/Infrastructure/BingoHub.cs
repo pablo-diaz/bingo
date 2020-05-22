@@ -15,15 +15,12 @@ namespace WebUI.Infrastructure
         {
             var gameNameClaimFound = Context.User.Claims.First(claim => claim.Type == "GameName");
             await Groups.AddToGroupAsync(Context.ConnectionId, gameNameClaimFound.Value);
-
-            System.Console.WriteLine($"-> -> -> -> -> -> -> ->[BingoHub - OnConnectedAsync] ClientID '{Context.ConnectionId}' has connected to the BingoHub on game '{gameNameClaimFound.Value}'");
-
             await base.OnConnectedAsync();
         }
 
         public async Task SendBallPlayedMessage(string inGameName, BallDTO ballPlayed)
         {
-            await Clients.All.SendAsync("OnBallPlayedMessage", inGameName, ballPlayed);
+            await Clients.Group(inGameName).SendAsync("OnBallPlayedMessage", inGameName, ballPlayed);
         }
     }
 }
