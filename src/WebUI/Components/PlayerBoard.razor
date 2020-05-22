@@ -1,0 +1,52 @@
+﻿@using WebUI.Models.GamePlayer 
+
+<table>
+    <thead>
+        <tr>
+            <th>B</th>
+            <th>I</th>
+            <th>N</th>
+            <th>G</th>
+            <th>O</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for(var rowIndex = 0; rowIndex < ArrangedBalls.GetLength(0); rowIndex++)
+        {
+            <tr>
+                @for(var columnIndex = 0; columnIndex < ArrangedBalls.GetLength(1); columnIndex++)
+                {
+                    <td>
+                        <button class="btn btn-outline-primary">@ArrangedBalls[rowIndex, columnIndex].Number</button>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public List<BallModel> Balls { get; set; }
+
+    private BallModel[,] ArrangedBalls;
+
+    protected override void OnInitialized()
+    {
+        var bColumn = Balls.Where(ball => ball.Leter == "B").OrderBy(ball => ball.Number).ToList();
+        var iColumn = Balls.Where(ball => ball.Leter == "I").OrderBy(ball => ball.Number).ToList();
+        var nColumn = Balls.Where(ball => ball.Leter == "N").OrderBy(ball => ball.Number).ToList();
+        var gColumn = Balls.Where(ball => ball.Leter == "G").OrderBy(ball => ball.Number).ToList();
+        var oColumn = Balls.Where(ball => ball.Leter == "O").OrderBy(ball => ball.Number).ToList();
+
+        this.ArrangedBalls = new BallModel[5, 5];
+        for(var rowIndex = 0; rowIndex < 5; rowIndex++)
+        {
+            this.ArrangedBalls[rowIndex, 0] = bColumn[rowIndex];
+            this.ArrangedBalls[rowIndex, 1] = iColumn[rowIndex];
+            this.ArrangedBalls[rowIndex, 2] = nColumn[rowIndex];
+            this.ArrangedBalls[rowIndex, 3] = gColumn[rowIndex];
+            this.ArrangedBalls[rowIndex, 4] = oColumn[rowIndex];
+        }
+    }
+}
