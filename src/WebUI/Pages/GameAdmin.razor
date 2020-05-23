@@ -78,6 +78,7 @@
              OnAddingBoard=@(player => { admon.AddBoardToPlayer(player); UpdateUI(); })
              OnRemovingBoard=@(player => { admon.RemoveBoardFromPlayer(player); UpdateUI(); })
              OnSettingWinner=@(async winner => { await admon.SetWinner(winner); UpdateUI(); })
+             OnRemovingPlayer=@(player => { admon.RemovePlayer(player); UpdateUI(); })
              IsThereAWinnerAlready=@admon.IsThereAWinnerAlready />
 
     <MasterBoard CanItBeShown=@(!admon.GameModel.IsItADraftGame)

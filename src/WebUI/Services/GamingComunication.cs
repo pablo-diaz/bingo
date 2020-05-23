@@ -147,6 +147,26 @@ namespace WebUI.Services
             return Result.Ok(gameFound);
         }
 
+        public Result<Game> RemovePlayer(string inGameName, string playerNameToRemove)
+        {
+            inGameName = inGameName.Trim();
+            playerNameToRemove = playerNameToRemove.Trim();
+
+            var gameFound = this._games.FirstOrDefault(g => g.Name == inGameName);
+            if (gameFound == null)
+                return Result.Failure<Game>("Game has not been found by its name");
+
+            var playerFound = gameFound.Players.FirstOrDefault(player => player.Name == playerNameToRemove);
+            if (playerFound == null)
+                return Result.Failure<Game>("Player has not been found by its name");
+
+            var removePlayerResult = gameFound.RemovePlayer(playerFound);
+            if (removePlayerResult.IsFailure)
+                return Result.Failure<Game>(removePlayerResult.Error);
+
+            return Result.Ok(gameFound);
+        }
+
         public Result<Game> StartGame(string gameName)
         {
             gameName = gameName.Trim();
