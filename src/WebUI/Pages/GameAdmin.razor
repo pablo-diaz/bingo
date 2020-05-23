@@ -73,8 +73,9 @@
     <button class="btn btn-success" @onclick=admon.StartGame style=@(admon.GameModel.IsItADraftGame ? "" : "display: none;")>Iniciar juego</button>
 
     <Players List=@admon.GameModel.Players
-             AllowAddingBoards=@admon.GameModel.IsItADraftGame
+             AllowModifyingBoards=@admon.GameModel.IsItADraftGame
              OnAddingBoard=@(player => { admon.AddBoardToPlayer(player); UpdateUI(); })
+             OnRemovingBoard=@(player => { admon.RemoveBoardFromPlayer(player); UpdateUI(); })
              OnSettingWinner=@(winner => { admon.SetWinner(winner); UpdateUI(); })
              IsThereAWinnerAlready=@admon.IsThereAWinnerAlready />
 

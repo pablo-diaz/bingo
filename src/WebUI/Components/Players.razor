@@ -15,9 +15,10 @@
                             <h6 class="card-subtitle mb-4"><span class="badge badge-success">Ganador !!</span></h6>
                         }
                         <h6 class="card-subtitle mb-4"><span class="badge badge-info">@player.BoardsCount tableros</span></h6>
-                        @if (AllowAddingBoards)
+                        @if (AllowModifyingBoards)
                         {
                             <button class="btn btn-primary" @onclick=@(() => OnAddingBoard?.Invoke(player))>Agregar 1 Tabla</button>
+                            <button class="btn btn-danger" style="visibility: @(player.BoardsCount > 0 ? "visible" : "hidden")" @onclick=@(() => OnRemovingBoard?.Invoke(player))>Eliminar 1 Tabla</button>
                         }
                         @if (!IsThereAWinnerAlready && player.WinningBoardCount > 0)
                         {
@@ -36,10 +37,13 @@
     public List<PlayerModel> List { get; set; }
 
     [Parameter]
-    public bool AllowAddingBoards { get; set; }
+    public bool AllowModifyingBoards { get; set; }
 
     [Parameter]
     public Action<PlayerModel> OnAddingBoard { get; set; }
+
+    [Parameter]
+    public Action<PlayerModel> OnRemovingBoard { get; set; }
 
     [Parameter]
     public Action<PlayerModel> OnSettingWinner { get; set; }

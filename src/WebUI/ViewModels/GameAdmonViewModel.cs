@@ -176,6 +176,21 @@ namespace WebUI.ViewModels
             return Task.CompletedTask;
         }
 
+        public Task RemoveBoardFromPlayer(PlayerModel player)
+        {
+            var removeBoardFromPlayerResult = this._gamingComunication.RemoveBoardFromPlayer(this.GameModel.Name, player.Name);
+            if (removeBoardFromPlayerResult.IsFailure)
+            {
+                this._toastService.ShowError(removeBoardFromPlayerResult.Error);
+                return Task.CompletedTask;
+            }
+
+            this._toastService.ShowSuccess($"Se ha removido una tabla del jugador {player.Name}");
+
+            this.TransitionToEditGame(GameModel.FromEntity(removeBoardFromPlayerResult.Value));
+            return Task.CompletedTask;
+        }
+
         public Task StartGame()
         {
             var startGameResult = this._gamingComunication.StartGame(this.GameModel.Name);
