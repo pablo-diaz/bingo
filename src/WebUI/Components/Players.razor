@@ -17,6 +17,7 @@
                         <h6 class="card-subtitle mb-4"><span class="badge badge-info">@player.BoardsCount tableros</span></h6>
                         @if (AllowModifyingBoards)
                         {
+                            <button class="btn btn-outline-warning" @onclick=@(() => OnEditingInfo?.Invoke(player))>Editar Info</button>
                             <button class="btn btn-primary" @onclick=@(() => OnAddingBoard?.Invoke(player))>Agregar 1 Tabla</button>
                             <button class="btn btn-danger" style="visibility: @(player.BoardsCount > 0 ? "visible" : "hidden")" @onclick=@(() => OnRemovingBoard?.Invoke(player))>Eliminar 1 Tabla</button>
                         }
@@ -38,6 +39,9 @@
 
     [Parameter]
     public bool AllowModifyingBoards { get; set; }
+
+    [Parameter]
+    public Action<PlayerModel> OnEditingInfo { get; set; }
 
     [Parameter]
     public Action<PlayerModel> OnAddingBoard { get; set; }

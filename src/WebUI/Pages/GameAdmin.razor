@@ -74,6 +74,7 @@
 
     <Players List=@admon.GameModel.Players
              AllowModifyingBoards=@admon.GameModel.IsItADraftGame
+             OnEditingInfo=@(player => { admon.TransitionToEditPlayerInfo(player); UpdateUI(); })
              OnAddingBoard=@(player => { admon.AddBoardToPlayer(player); UpdateUI(); })
              OnRemovingBoard=@(player => { admon.RemoveBoardFromPlayer(player); UpdateUI(); })
              OnSettingWinner=@(winner => { admon.SetWinner(winner); UpdateUI(); })
@@ -87,9 +88,9 @@
                  IsThereAWinnerAlready=@admon.IsThereAWinnerAlready />
 }
 
-@if (admon.CanNewPlayerSectionBeShown)
+@if (admon.CanNewPlayerSectionBeShown || admon.CanEditPlayerSectionBeShown)
 {
-    <EditForm Model=admon.PlayerModel OnValidSubmit=admon.CreateNewPlayer>
+    <EditForm Model=admon.PlayerModel OnValidSubmit=admon.SavePlayerInfo>
         <DataAnnotationsValidator />
         <div class="form-row">
             <div class="col">
@@ -110,8 +111,8 @@
                 <ValidationMessage For="@(() => admon.PlayerModel.Password)" />
             </div>
         </div>
-        <button type="reset" class="btn btn-secondary" @onclick=admon.CancelCreatingNewPlayer>Cancelar</button>
-        <button type="submit" class="btn btn-primary">Crear jugador</button>
+        <button type="reset" class="btn btn-secondary" @onclick=admon.CancelAddingOrEditingPlayerInfo>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Almacenar jugador</button>
     </EditForm>
 }
 

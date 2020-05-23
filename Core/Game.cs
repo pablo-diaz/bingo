@@ -81,7 +81,7 @@ namespace Core
             if (State != GameState.Draft)
                 return Result.Failure("Game has started already, thus no more new players are allowed");
 
-            if (this._players.Contains(newPlayer))
+            if (this._players.Any(player => player.Name == newPlayer.Name))
                 return Result.Failure("Game already contains the same player");
 
             if(this._players.Any(player => player.Security == newPlayer.Security))
@@ -103,7 +103,7 @@ namespace Core
             if (State != GameState.Draft)
                 return Result.Failure("Game has started already, thus no more updates are allowed");
 
-            if (!this._players.Contains(playerToUpdate))
+            if (!this._players.Any(player => player.Name == playerToUpdate.Name))
                 return Result.Failure("Game does not contain player that is to be updated");
 
             var playerWithSameNameExists = this._players.Except(new Player[] { playerToUpdate })
@@ -155,7 +155,7 @@ namespace Core
             if (State != GameState.Draft)
                 return Result.Failure<Board>("Game is in wrong state");
 
-            if(!this._players.Contains(player))
+            if(!this._players.Any(p => p.Name == player.Name))
                 return Result.Failure<Board>("Player is not part of Game");
 
             var newBoardResult = TryCreatingNewBoard(randomizer, tryUpToNTimes: 10);
@@ -172,7 +172,7 @@ namespace Core
             if (State != GameState.Draft)
                 return Result.Failure<Board>("Game is in wrong state");
 
-            if (!this._players.Contains(player))
+            if (!this._players.Any(p => p.Name == player.Name))
                 return Result.Failure<Board>("Player is not part of Game");
 
             return player.RemoveBoard(board);
@@ -183,7 +183,7 @@ namespace Core
             if (winner == null)
                 return Result.Failure("Player is Null");
 
-            if(!this._players.Contains(winner))
+            if(!this._players.Any(player => player.Name == winner.Name))
                 return Result.Failure("Player is not part of the game");
 
             if(this.State != GameState.Started)

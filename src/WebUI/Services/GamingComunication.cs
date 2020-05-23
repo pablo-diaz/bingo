@@ -72,6 +72,37 @@ namespace WebUI.Services
             return Result.Ok(gameFound);
         }
 
+        public Result<Game> UpdatePlayerInfoInGame(string gameName, Player existingPlayer, 
+            string newPlayerName, string newPlayerLogin, string newPlayerPassword)
+        {
+            gameName = gameName.Trim();
+            newPlayerName = newPlayerName.Trim();
+            newPlayerLogin = newPlayerLogin.Trim().ToLower();
+            newPlayerPassword = newPlayerPassword.Trim();
+
+            var gameFound = this._games.FirstOrDefault(g => g.Name == gameName);
+            if (gameFound == null)
+                return Result.Failure<Game>("Game has not been found by its name");
+
+            var existingPlayerFound = gameFound.Players.FirstOrDefault(player => player == existingPlayer);
+            if (existingPlayerFound == null)
+                return Result.Failure<Game>("Existing player was not found in game");
+
+            var newPlayerSecurityResult = PlayerSecurity.Create(newPlayerLogin, newPlayerPassword);
+            if (newPlayerSecurityResult.IsFailure)
+                return Result.Failure<Game>(newPlayerSecurityResult.Error);
+
+            var newPlayerInfoResult = Player.Create(newPlayerName, newPlayerSecurityResult.Value);
+            if (newPlayerInfoResult.IsFailure)
+                return Result.Failure<Game>(newPlayerInfoResult.Error);
+
+            var updatePlayerResult = gameFound.UpdatePlayer(existingPlayerFound, newPlayerInfoResult.Value);
+            if (updatePlayerResult.IsFailure)
+                return Result.Failure<Game>(updatePlayerResult.Error);
+
+            return Result.Ok(gameFound);
+        }
+
         public Result<Game> AddBoardToPlayer(string inGameName, string toPlayerName)
         {
             inGameName = inGameName.Trim();

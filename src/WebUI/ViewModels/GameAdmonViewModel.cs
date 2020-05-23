@@ -23,7 +23,8 @@ namespace WebUI.ViewModels
             BROWSING,
             CREATING_GAME,
             EDITING_GAME,
-            CREATING_PLAYER
+            CREATING_PLAYER,
+            EDITING_PLAYER
         }
 
         private readonly IToastService _toastService;
@@ -44,6 +45,7 @@ namespace WebUI.ViewModels
         public bool CanNewGameSectionBeShown => this._currentState == State.CREATING_GAME;
         public bool CanEditGameSectionBeShown => this._currentState == State.EDITING_GAME;
         public bool CanNewPlayerSectionBeShown => this._currentState == State.CREATING_PLAYER;
+        public bool CanEditPlayerSectionBeShown => this._currentState == State.EDITING_PLAYER;
         public bool IsItInDevMode => Convert.ToBoolean(this._configuration["Bingo.Security:DevMode"]);
 
         public bool IsThereAWinnerAlready => this.GameModel.GameEntity.Winner.HasValue;
@@ -137,27 +139,60 @@ namespace WebUI.ViewModels
             return Task.CompletedTask;
         }
 
-        public Task CreateNewPlayer()
+        public Task SavePlayerInfo()
         {
-            var newPlayerResult = this._gamingComunication.AddNewPlayerToGame(this.GameModel.Name, 
-                this.PlayerModel.Name, this.PlayerModel.Login, this.PlayerModel.Password);
+            Game game = null;
 
-            if(newPlayerResult.IsFailure)
+            if(this._currentState == State.CREATING_PLAYER)
             {
-                this._toastService.ShowError(newPlayerResult.Error);
+                var newPlayerResult = this._gamingComunication.AddNewPlayerToGame(this.GameModel.Name, 
+                    this.PlayerModel.Name, this.PlayerModel.Login, this.PlayerModel.Password);
+
+                if(newPlayerResult.IsFailure)
+                {
+                    this._toastService.ShowError(newPlayerResult.Error);
+                    return Task.CompletedTask;
+                }
+
+                game = newPlayerResult.Value;
+                this._toastService.ShowSuccess("El jugador se ha creado exitosamente");
+            }
+            else if(this._currentState == State.EDITING_PLAYER)
+            {
+                var updatePlayerResult = this._gamingComunication.UpdatePlayerInfoInGame(this.GameModel.Name,
+                    this.PlayerModel.PlayerEntity, this.PlayerModel.Name, this.PlayerModel.Login, 
+                    this.PlayerModel.Password);
+
+                if (updatePlayerResult.IsFailure)
+                {
+                    this._toastService.ShowError(updatePlayerResult.Error);
+                    return Task.CompletedTask;
+                }
+
+                game = updatePlayerResult.Value;
+                this._toastService.ShowSuccess("El jugador se ha actualizado exitosamente");
+            }
+            else
+            {
+                this._toastService.ShowError("Game is in weird state :(");
                 return Task.CompletedTask;
             }
 
-            this._toastService.ShowSuccess("El jugador se ha creado exitosamente");
-
-            this.TransitionToEditGame(GameModel.FromEntity(newPlayerResult.Value));
+            this.TransitionToEditGame(GameModel.FromEntity(game));
             return Task.CompletedTask;
         }
 
-        public Task CancelCreatingNewPlayer()
+        public Task CancelAddingOrEditingPlayerInfo()
         {
             TransitionToEditGame(this.GameModel);
 
+            return Task.CompletedTask;
+        }
+
+        public Task TransitionToEditPlayerInfo(PlayerModel player)
+        {
+            this._currentState = State.EDITING_PLAYER;
+            this.PlayerModel = player;
             return Task.CompletedTask;
         }
 
