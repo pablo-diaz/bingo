@@ -311,6 +311,59 @@ namespace UnitTests
 
         #endregion
 
+        #region Removing board from Player
+
+        [Test]
+        public void WhenRemovingBoardFromPlayer_ItWorks()
+        {
+            (var game, var player1, var _) = CreateDefaultGameWithPlayers();
+            var boardToRemove = player1.Boards.First();
+            var playerBoardsCount = player1.Boards.Count;
+
+            var result = game.RemoveBoardFromPlayer(player1, boardToRemove);
+
+            result.IsSuccess.Should().BeTrue();
+            player1.Boards.Should().HaveCount(playerBoardsCount - 1);
+            player1.Boards.Should().NotContain(boardToRemove);
+        }
+
+        [Test]
+        public void WhenRemovingBoardFromPlayer_IfGameIsNotInDraftState_ItFails()
+        {
+            (var game, var player1, var _) = CreateDefaultGameWithPlayers();
+            var boardToRemove = player1.Boards.First();
+
+            var _ = game.Start();
+            var result = game.RemoveBoardFromPlayer(player1, boardToRemove);
+
+            result.IsFailure.Should().BeTrue();
+        }
+
+        [Test]
+        public void WhenRemovingBoardFromPlayer_IfProvidingNonExistingPlayer_ItFails()
+        {
+            (var game, var player1, var _) = CreateDefaultGameWithPlayers();
+            var boardToRemove = player1.Boards.First();
+            var nonExistingPlayer = CreateValidPlayer(withName: "NonExistingPlayer", withLogin: "NonExistingLogin");
+
+            var result = game.RemoveBoardFromPlayer(nonExistingPlayer, boardToRemove);
+
+            result.IsFailure.Should().BeTrue();
+        }
+
+        [Test]
+        public void WhenRemovingBoardFromPlayer_IfProvidingNonExistingBoardFromPlayer_ItFails()
+        {
+            (var game, var player1, var player2) = CreateDefaultGameWithPlayers();
+            var boardFromPlayer2ToRemove = player2.Boards.First();
+
+            var result = game.RemoveBoardFromPlayer(player1, boardFromPlayer2ToRemove);
+
+            result.IsFailure.Should().BeTrue();
+        }
+
+        #endregion
+
         #region Starging Game
 
         [Test]

@@ -75,6 +75,16 @@ namespace Core
             this._boards.Add(board);
         }
 
+        internal Result RemoveBoard(Board board)
+        {
+            if (!this._boards.Contains(board))
+                return Result.Failure("Board does not exist in Player's boards");
+            
+            this._boards.Remove(board);
+
+            return Result.Ok();
+        }
+
         internal void CopyInfoFromPlayer(Player anotherPlayer)
         {
             this.Name = anotherPlayer.Name;

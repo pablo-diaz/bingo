@@ -167,6 +167,17 @@ namespace Core
             return newBoardResult;
         }
 
+        public Result RemoveBoardFromPlayer(Player player, Board board)
+        {
+            if (State != GameState.Draft)
+                return Result.Failure<Board>("Game is in wrong state");
+
+            if (!this._players.Contains(player))
+                return Result.Failure<Board>("Player is not part of Game");
+
+            return player.RemoveBoard(board);
+        }
+
         public Result SetWinner(Player winner)
         {
             if (winner == null)
