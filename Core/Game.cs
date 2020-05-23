@@ -118,6 +118,22 @@ namespace Core
             return Result.Ok();
         }
 
+        public Result RemovePlayer(Player playerToRemove)
+        {
+            if (playerToRemove == null)
+                return Result.Failure("Player is null");
+
+            if (State != GameState.Draft)
+                return Result.Failure("Game has started already, thus removing players are not allowed anymore");
+
+            if (!this._players.Any(player => player.Name == playerToRemove.Name))
+                return Result.Failure("Player does not exist in Game");
+
+            this._players.Remove(playerToRemove);
+
+            return Result.Ok();
+        }
+
         public Result Start()
         {
             if (this._players.Count() < 2)

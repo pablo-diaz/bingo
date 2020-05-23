@@ -272,6 +272,43 @@ namespace UnitTests
 
         #endregion
 
+        #region Removing player
+
+        [Test]
+        public void WhenRemovingValidPlayer_ItWorks()
+        {
+            (var game, var player1, var _) = this.CreateDefaultGameWithPlayers();
+            
+            var result = game.RemovePlayer(player1);
+
+            result.IsSuccess.Should().BeTrue();
+            game.Players.Should().NotContain(player1);
+        }
+
+        [Test]
+        public void WhenRemovingValidPlayer_IfGameIsNotInDraftMode_ItFails()
+        {
+            (var game, var player1, var _) = this.CreateDefaultGameWithPlayers();
+            var _ = game.Start();
+
+            var result = game.RemovePlayer(player1);
+
+            result.IsFailure.Should().BeTrue();
+        }
+
+        [Test]
+        public void WhenRemovingNonExistingPlayer_ItFails()
+        {
+            (var game, var _, var __) = this.CreateDefaultGameWithPlayers();
+            var nonExistingPlayer = CreateValidPlayer(withName: "NonExisting Player", withLogin: "NonExisting Login");
+
+            var result = game.RemovePlayer(nonExistingPlayer);
+
+            result.IsFailure.Should().BeTrue();
+        }
+
+        #endregion
+
         #region Adding Boards to Players
 
         [Test]
