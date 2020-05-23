@@ -208,6 +208,70 @@ namespace UnitTests
 
         #endregion
 
+        #region Editing players
+
+        [Test, Sequential]
+        public void WhenEditingPlayer_ItWorks(
+            [Values("NewName",     "NewName", null,       null)] string newName,
+            [Values("NewLogin",    null,      "NewLogin", null)] string newLogin,
+            [Values("NewPassword", null,      null,       "NewPassword")] string newPasswd)
+        {
+            (var game, var playerToUpdate, var _) = CreateDefaultGameWithPlayers();
+            
+            newName = newName ?? playerToUpdate.Name;
+            newLogin = newLogin ?? playerToUpdate.Security.Login;
+            newPasswd = newPasswd ?? playerToUpdate.Security.Password;
+
+            var newPlayerInfo = CreateValidPlayer(withName: newName, withLogin: newLogin, withPassword: newPasswd);
+            var updatePlayerResult = game.UpdatePlayer(playerToUpdate, newPlayerInfo);
+
+            updatePlayerResult.IsSuccess.Should().BeTrue();
+            game.Players.Should().NotBeEmpty()
+                .And.HaveCount(2)
+                .And.Contain(newPlayerInfo);
+            playerToUpdate.Name.Should().Be(newName);
+            playerToUpdate.Security.Login.Should().Be(newLogin);
+            playerToUpdate.Security.Password.Should().Be(newPasswd);
+        }
+
+        [Test]
+        public void WhenEditingPlayer_IfGameIsNotDraft_ItFails()
+        {
+            (var game, var player1, var _) = CreateDefaultGameWithPlayers();
+            game.Start();
+
+            var newPlayerInfo = CreateValidPlayer(withName: "Updated Player", withLogin: "Updated Login");
+            var updatePlayerResult = game.UpdatePlayer(player1, newPlayerInfo);
+
+            updatePlayerResult.IsFailure.Should().BeTrue();
+        }
+
+        [Test]
+        public void WhenEditingPlayer_IfPlayerToUpdateDoesNotExist_ItFails()
+        {
+            (var game, var _, var __) = CreateDefaultGameWithPlayers();
+            var nonExistingPlayer = CreateValidPlayer(withName: "NonExisting player");
+            var newPlayerInfo = CreateValidPlayer(withName: "Updated Player", withLogin: "Updated Login");
+
+            var updatePlayerResult = game.UpdatePlayer(nonExistingPlayer, newPlayerInfo);
+
+            updatePlayerResult.IsFailure.Should().BeTrue();
+        }
+
+        [Test]
+        public void WhenEditingPlayer_IfNewPlayerInfoAlreadyExists_ItFails()
+        {
+            (var game, var playerToBeUpdated, var anotherPlayer) = CreateDefaultGameWithPlayers();
+            var newPlayerInfo = CreateValidPlayer(withName: anotherPlayer.Name, 
+                withLogin: anotherPlayer.Security.Login);
+
+            var updatePlayerResult = game.UpdatePlayer(playerToBeUpdated, newPlayerInfo);
+
+            updatePlayerResult.IsFailure.Should().BeTrue();
+        }
+
+        #endregion
+
         #region Adding Boards to Players
 
         [Test]
@@ -487,8 +551,9 @@ namespace UnitTests
             return (newGame, chosenPlayerSetToWin, chosenBoardSetToWin, otherPlayer);
         }
 
-        private Player CreateValidPlayer(string withName = "Player 01", string withLogin = "Login 01") =>
-            Player.Create(withName, PlayerSecurity.Create(withLogin, "Passwd 01").Value).Value;
+        private Player CreateValidPlayer(string withName = "Player 01", 
+            string withLogin = "Login 01", string  withPassword = "Password 01") =>
+            Player.Create(withName, PlayerSecurity.Create(withLogin, withPassword).Value).Value;
 
         #endregion
     }

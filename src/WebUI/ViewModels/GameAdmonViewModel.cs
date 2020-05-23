@@ -11,6 +11,7 @@ using Blazored.Toast.Services;
 
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Configuration;
+using System;
 
 namespace WebUI.ViewModels
 {
@@ -43,6 +44,7 @@ namespace WebUI.ViewModels
         public bool CanNewGameSectionBeShown => this._currentState == State.CREATING_GAME;
         public bool CanEditGameSectionBeShown => this._currentState == State.EDITING_GAME;
         public bool CanNewPlayerSectionBeShown => this._currentState == State.CREATING_PLAYER;
+        public bool IsItInDevMode => Convert.ToBoolean(this._configuration["Bingo.Security:DevMode"]);
 
         public bool IsThereAWinnerAlready => this.GameModel.GameEntity.Winner.HasValue;
 

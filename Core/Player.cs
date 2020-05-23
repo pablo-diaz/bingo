@@ -9,8 +9,8 @@ namespace Core
     {
         #region Properties
 
-        public string Name { get; }
-        public PlayerSecurity Security { get; }
+        public string Name { get; private set; }
+        public PlayerSecurity Security { get; private set; }
         
         private HashSet<Board> _boards { get; }
         public IReadOnlyCollection<Board> Boards { get => this._boards.ToList(); }
@@ -73,6 +73,15 @@ namespace Core
         internal void AddBoard(Board board)
         {
             this._boards.Add(board);
+        }
+
+        internal void CopyInfoFromPlayer(Player anotherPlayer)
+        {
+            this.Name = anotherPlayer.Name;
+            this.Security = anotherPlayer.Security;
+
+            foreach(var board in anotherPlayer.Boards)
+                this._boards.Add(board);
         }
 
         internal void PlayBall(Ball ballToPlay)

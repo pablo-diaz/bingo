@@ -92,6 +92,32 @@ namespace Core
             return Result.Ok();
         }
 
+        public Result UpdatePlayer(Player playerToUpdate, Player newPlayerInfo)
+        {
+            if (playerToUpdate == null)
+                return Result.Failure("Player is null");
+
+            if (newPlayerInfo == null)
+                return Result.Failure("New player info is null");
+
+            if (State != GameState.Draft)
+                return Result.Failure("Game has started already, thus no more updates are allowed");
+
+            if (!this._players.Contains(playerToUpdate))
+                return Result.Failure("Game does not contain player that is to be updated");
+
+            var playerWithSameNameExists = this._players.Except(new Player[] { playerToUpdate })
+                .Any(player => player.Name == newPlayerInfo.Name);
+            var playerWithSameLoginExists = this._players.Except(new Player[] { playerToUpdate })
+                .Any(player => player.Security == newPlayerInfo.Security);
+            if (playerWithSameNameExists && playerWithSameLoginExists)
+                return Result.Failure("Game already contains another player with the same new info");
+
+            playerToUpdate.CopyInfoFromPlayer(newPlayerInfo);
+            
+            return Result.Ok();
+        }
+
         public Result Start()
         {
             if (this._players.Count() < 2)
