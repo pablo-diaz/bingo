@@ -22,5 +22,10 @@ namespace WebUI.Infrastructure
         {
             await Clients.Group(inGameName).SendAsync("OnBallPlayedMessage", ballPlayed);
         }
+
+        public async Task SendWinnerMessage(string inGameName, string winnerName)
+        {
+            await Clients.Group(inGameName).SendAsync("OnSetWinnerMessage", winnerName);
+        }
     }
 }

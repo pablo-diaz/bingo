@@ -274,9 +274,9 @@ namespace WebUI.ViewModels
             this.TransitionToEditGame(GameModel.FromEntity(playBallResult.Value));
         }
 
-        public void SetWinner(PlayerModel player)
+        public async Task SetWinner(PlayerModel player)
         {
-            var setWinnerResult = this._gamingComunication.SetWinner(this.GameModel.Name, player.Name);
+            var setWinnerResult = await this._gamingComunication.SetWinner(this.GameModel.Name, player.Name);
             if (setWinnerResult.IsFailure)
             {
                 this._toastService.ShowError(setWinnerResult.Error);
@@ -285,7 +285,7 @@ namespace WebUI.ViewModels
 
             this._toastService.ShowSuccess($"Se ha establecido a {player.Name} como el Ganador del juego");
 
-            this.TransitionToEditGame(GameModel.FromEntity(setWinnerResult.Value));
+            await this.TransitionToEditGame(GameModel.FromEntity(setWinnerResult.Value));
         }
 
         public Task AddTestGames()

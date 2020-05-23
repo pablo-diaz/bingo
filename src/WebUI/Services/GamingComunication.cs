@@ -200,7 +200,7 @@ namespace WebUI.Services
             return Result.Ok(gameFound);
         }
 
-        public Result<Game> SetWinner(string inGameName, string winnerName)
+        public async Task<Result<Game>> SetWinner(string inGameName, string winnerName)
         {
             inGameName = inGameName.Trim();
             winnerName = winnerName.Trim();
@@ -216,6 +216,8 @@ namespace WebUI.Services
             var settingWinnerResult = gameFound.SetWinner(playerFound);
             if (settingWinnerResult.IsFailure)
                 return Result.Failure<Game>(settingWinnerResult.Error);
+
+            await this._bingoHub.SendWinnerMessage(inGameName, winnerName);
 
             return Result.Ok(gameFound);
         }

@@ -113,10 +113,8 @@ namespace WebUI.ViewModels
                 })
                 .Build();
 
-            this._bingoHubConnection.On<Infrastructure.DTOs.BallDTO>("OnBallPlayedMessage", ballPlayed =>
-            {
-                OnBallPlayed(ballPlayed);
-            });
+            this._bingoHubConnection.On<BallDTO>("OnBallPlayedMessage", OnBallPlayed);
+            this._bingoHubConnection.On<string>("OnSetWinnerMessage", SetWinnerMessageHandler);
 
             await this._bingoHubConnection.StartAsync();
         }
@@ -139,6 +137,18 @@ namespace WebUI.ViewModels
                 this.PlayerModel.AdjustBoardsState(ball);
 
             this._triggerUIRefresh?.Invoke();
+        }
+
+        private void SetWinnerMessageHandler(string winnerName)
+        {
+            if(this.PlayerModel != null && this.PlayerModel.Name == winnerName)
+            {
+                this._toastService.ShowSuccess($"Tú has ganado el juego. FELICITACIONES !!", "Eres el Ganador");
+            }
+            else
+            {
+                this._toastService.ShowSuccess($"El jugador {winnerName} ha ganado el juego !!");
+            }
         }
     }
 }
