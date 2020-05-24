@@ -11,6 +11,7 @@ using Blazored.Toast.Services;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Components;
 using WebUI.Infrastructure.DTOs;
+using Microsoft.Extensions.Configuration;
 
 namespace WebUI.ViewModels
 {
@@ -26,6 +27,7 @@ namespace WebUI.ViewModels
         private readonly IToastService _toastService;
         private readonly GamingComunication _gamingComunication;
         private readonly NavigationManager _navigationManager;
+        private readonly IConfiguration _configuration;
         private State _currentState;
         private HubConnection _bingoHubConnection;
         private Action _triggerUIRefresh;
@@ -38,17 +40,18 @@ namespace WebUI.ViewModels
         public LoginModel LoginModel { get; set; }
         public PlayerModel PlayerModel { get; set; }
         public List<BallDTO> PlayedBalls { get; private set; }
-
+        
         public bool CanSelectGameSectionBeShown => this._currentState == State.SELECTING_GAME;
         public bool CanAuthenticateInGameSectionBeShown => this._currentState == State.AUTHENTICATING_IN_GAME;
         public bool CanLoggedInSectionBeShown => this._currentState == State.LOGGED_IN;
 
         public GamePlayerViewModel(IToastService toastService, GamingComunication gamingComunication,
-            NavigationManager navigationManager)
+            NavigationManager navigationManager, IConfiguration configuration)
         {
             this._toastService = toastService;
             this._gamingComunication = gamingComunication;
             this._navigationManager = navigationManager;
+            this._configuration = configuration;
         }
 
         public Task InitializeComponent(Action triggerUIRefresh)
@@ -107,8 +110,10 @@ namespace WebUI.ViewModels
 
         private async Task StartBingoHubConnection(string jwtPlayerToken)
         {
+            var specificWebRootFolder = this._configuration["Bingo.Security:SpecificWebRootFolder"];
+            var serverURI = this._navigationManager.ToAbsoluteUri($"{specificWebRootFolder}/bingoHub");
             this._bingoHubConnection = new HubConnectionBuilder()
-                .WithUrl(this._navigationManager.ToAbsoluteUri("/bingoHub"), options => {
+                .WithUrl(serverURI, options => {
                     options.AccessTokenProvider = () => Task.FromResult(jwtPlayerToken);
                 })
                 .Build();
