@@ -21,7 +21,7 @@
                         <button disabled=@ballInfo.HasPlayerSelectedIt 
                                 class="btn @(GetButtonClassForState(ballInfo))"
                                 @onclick=@(() => BallClicked(ballInfo))>
-                                    @ballInfo.Number
+                                    @(ballInfo.IsItSpecialCharacterBall ? "X" : ballInfo.Number.ToString())
                         </button>
                     </td>
                 }
@@ -49,9 +49,16 @@
         {
             this.ArrangedBalls[rowIndex, 0] = bColumn[rowIndex];
             this.ArrangedBalls[rowIndex, 1] = iColumn[rowIndex];
-            this.ArrangedBalls[rowIndex, 2] = nColumn[rowIndex];
             this.ArrangedBalls[rowIndex, 3] = gColumn[rowIndex];
             this.ArrangedBalls[rowIndex, 4] = oColumn[rowIndex];
+
+            if (rowIndex != 2)
+            {
+                var nColumnRowIndex = rowIndex < 2 ? rowIndex : rowIndex - 1;
+                this.ArrangedBalls[rowIndex, 2] = nColumn[nColumnRowIndex];
+            }
+            else
+                this.ArrangedBalls[rowIndex, 2] = BallModel.CreateSpecialCharacterBall();
         }
     }
 
