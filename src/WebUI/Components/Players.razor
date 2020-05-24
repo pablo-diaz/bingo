@@ -4,28 +4,69 @@
     <div class="row">
         @foreach (var player in List)
         {
-            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3">
-                <div class="card">
+            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-4">
+                <div class="card" style="margin: 15px 15px 15px 15px;">
                     <div class="card-body">
                         <h5 class="card-title">@player.Name</h5>
                         <h6 class="card-subtitle mb-2">Login: @player.Login</h6>
                         <h6 class="card-subtitle mb-3">Contraseña: @player.Password</h6>
-                        @if (player.IsTheWinner)
-                        {
-                            <h6 class="card-subtitle mb-4"><span class="badge badge-success">Ganador !!</span></h6>
-                        }
-                        <h6 class="card-subtitle mb-4"><span class="badge badge-info">@player.BoardsCount tableros</span></h6>
+
+                        <table class="player-table-messages">
+                            <tbody>
+                                <tr style="vertical-align: top">
+                                    <td>
+                                        <h6 class="card-subtitle"
+                                            style="display: @(player.IsTheWinner ? "block": "none")">
+                                            <span class="badge badge-success">Ganador !!</span>
+                                        </h6>
+                                        <button class="btn btn-success"
+                                                style="display: @((!IsThereAWinnerAlready && player.WinningBoardCount > 0) ? "block" : "none")"
+                                                @onclick=@(() => OnSettingWinner?.Invoke(player))>Establecer como Ganador</button>
+                                    </td>
+                                    <td>
+                                        <h6 class="card-subtitle"
+                                            style="display: @((!IsThereAWinnerAlready && player.WinningBoardCount > 0) ? "none" : "block")">
+                                            <span class="badge badge-info">@player.BoardsCount tableros</span>
+                                        </h6>
+                                        <h6 class="card-subtitle"
+                                            style="display: @((!IsThereAWinnerAlready && player.WinningBoardCount > 0) ? "block" : "none")">
+                                            <span class="badge badge-warning text-wrap">@player.WinningBoardCount de @player.BoardsCount tableros ganadores</span>
+                                        </h6>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
                         @if (AllowModifyingBoards)
                         {
-                            <button class="btn btn-outline-warning" @onclick=@(() => OnEditingInfo?.Invoke(player))>Editar Info</button>
-                            <button class="btn btn-primary" @onclick=@(() => OnAddingBoard?.Invoke(player))>Agregar 1 Tabla</button>
-                            <button class="btn btn-danger" style="visibility: @(player.BoardsCount > 0 ? "visible" : "hidden")" @onclick=@(() => OnRemovingBoard?.Invoke(player))>Eliminar 1 Tabla</button>
-                            <button class="btn btn-outline-danger" @onclick=@(() => OnRemovingPlayer?.Invoke(player))>Eliminar Jugador</button>
-                        }
-                        @if (!IsThereAWinnerAlready && player.WinningBoardCount > 0)
-                        {
-                            <h6 class="card-subtitle mb-5"><span class="badge badge-warning">@player.WinningBoardCount tableros ganadores</span></h6>
-                            <button class="btn btn-success" @onclick=@(() => OnSettingWinner?.Invoke(player))>Establecer como Ganador</button>
+                            <table class="player-table-actions">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <button class="btn btn-outline-warning text-nowrap"
+                                                    style="margin: 10px 10px 10px 10px;"
+                                                    @onclick=@(() => OnEditingInfo?.Invoke(player))>Editar</button>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-outline-danger text-nowrap"
+                                                    style="margin: 10px 10px 10px 10px;"
+                                                    @onclick=@(() => OnRemovingPlayer?.Invoke(player))>Eliminar</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="btn btn-primary text-nowrap"
+                                                    style="margin: 10px 10px 10px 10px;"
+                                                    @onclick=@(() => OnAddingBoard?.Invoke(player))>+1 Tabla</button>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-danger text-nowrap"
+                                                    style="margin: 10px 10px 10px 10px; display: @(player.BoardsCount > 0 ? "block" : "none")" 
+                                                    @onclick=@(() => OnRemovingBoard?.Invoke(player))>-1 Tabla</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         }
                     </div>
                 </div>
