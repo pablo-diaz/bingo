@@ -1,6 +1,6 @@
 ﻿@using WebUI.Models.GamePlayer 
 
-<table class="shadow-lg p-3 mb-5 bg-white rounded bingo-board">
+<table class="shadow-lg p-3 mb-5 bg-white rounded @(GetBoardClass())">
     <thead>
         <tr>
             <th style="text-align: center">B</th>
@@ -31,6 +31,9 @@
 </table>
 
 @code {
+    [Parameter]
+    public int BoardNumber { get; set; }
+
     [Parameter]
     public List<BallModel> Balls { get; set; }
 
@@ -78,5 +81,11 @@
             ballInfo.HasPlayerSelectedIt = true;
             StateHasChanged();
         }
+    }
+
+    private string GetBoardClass()
+    {
+        var boardClasses = new string[] { "bingo-board-1", "bingo-board-2", "bingo-board-3" };
+        return boardClasses[this.BoardNumber % boardClasses.Length];
     }
 }
