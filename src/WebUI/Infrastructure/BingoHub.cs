@@ -13,19 +13,36 @@ namespace WebUI.Infrastructure
     {
         public override async Task OnConnectedAsync()
         {
-            var gameNameClaimFound = Context.User.Claims.First(claim => claim.Type == "GameName");
+            var gameNameClaimFound = Context.User.Claims.FirstOrDefault(claim => claim.Type == "GameName");
+            if (gameNameClaimFound == null)
+                return;
+            
             await Groups.AddToGroupAsync(Context.ConnectionId, gameNameClaimFound.Value);
             await base.OnConnectedAsync();
         }
 
         public async Task SendBallPlayedMessage(string inGameName, BallDTO ballPlayed)
         {
-            await Clients.Group(inGameName).SendAsync("OnBallPlayedMessage", ballPlayed);
+            if (Clients == null)
+                return;
+
+            var gropuFound = Clients.Group(inGameName);
+            if (gropuFound == null)
+                return;
+
+            await gropuFound.SendAsync("OnBallPlayedMessage", ballPlayed);
         }
 
         public async Task SendWinnerMessage(string inGameName, string winnerName)
         {
-            await Clients.Group(inGameName).SendAsync("OnSetWinnerMessage", winnerName);
+            if (Clients == null)
+                return;
+
+            var gropuFound = Clients.Group(inGameName);
+            if (gropuFound == null)
+                return;
+
+            await gropuFound.SendAsync("OnSetWinnerMessage", winnerName);
         }
     }
 }
