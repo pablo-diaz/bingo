@@ -181,3 +181,9 @@ app {
         display: block;
     }
 }
+
+.bingo-board {
+    color: white;
+    background-color: #794686;
+    box-shadow: 0px -5px 20px black;
+}

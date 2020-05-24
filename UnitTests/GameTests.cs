@@ -314,14 +314,30 @@ namespace UnitTests
         [Test]
         public void WhenAddingBoardToPlayer_ItWorks()
         {
-            var newGameResult = CreateGameWithoutPlayers();
+            var newGameResult = CreateGameWithoutPlayers(withMaxNBallsPerBucket: 5);
             var newPlayer = CreateValidPlayer();
             newGameResult.Value.AddPlayer(newPlayer);
 
             var addBoardResult = newGameResult.Value.AddBoardToPlayer(this._randomizer, newPlayer);
             addBoardResult.IsSuccess.Should().BeTrue();
+
+            var newAddedBoard = addBoardResult.Value;
             newPlayer.Boards.Should().NotBeEmpty()
-                .And.Contain(addBoardResult.Value);
+                .And.Contain(newAddedBoard);
+            newAddedBoard.BallsConfigured.Should().HaveCount(24);
+            newAddedBoard.BallsPlayed.Should().BeEmpty();
+            
+            var bColumnCount = newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.B);
+            var iColumnCount = newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.I);
+            var nColumnCount = newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.N);
+            var gColumnCount = newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.G);
+            var oColumnCount = newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.O);
+
+            bColumnCount.Should().Be(5);
+            iColumnCount.Should().Be(5);
+            nColumnCount.Should().Be(4);
+            gColumnCount.Should().Be(5);
+            oColumnCount.Should().Be(5);
         }
 
         [Test]
@@ -607,7 +623,8 @@ namespace UnitTests
 
         #region Helpers
 
-        private Result<Game> CreateGameWithoutPlayers(string withName = "Name 01", short withTotalBallsCount = 75, short withMaxNBallsPerBucket = 5) =>
+        private Result<Game> CreateGameWithoutPlayers(string withName = "Name 01", short withTotalBallsCount = 75, 
+            short withMaxNBallsPerBucket = 5) =>
             Game.Create(withName, withTotalBallsCount, withMaxNBallsPerBucket);
 
         private (Game game, Player player1, Player player2) CreateDefaultGameWithPlayers(bool shouldBoardsBeAdded = true)

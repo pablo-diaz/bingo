@@ -1,13 +1,13 @@
 ﻿@using WebUI.Models.GamePlayer 
 
-<table>
+<table class="shadow-lg p-3 mb-5 bg-white rounded bingo-board">
     <thead>
         <tr>
-            <th>B</th>
-            <th>I</th>
-            <th>N</th>
-            <th>G</th>
-            <th>O</th>
+            <th style="text-align: center">B</th>
+            <th style="text-align: center">I</th>
+            <th style="text-align: center">N</th>
+            <th style="text-align: center">G</th>
+            <th style="text-align: center">O</th>
         </tr>
     </thead>
     <tbody>
@@ -18,10 +18,10 @@
                 {
                     var ballInfo = ArrangedBalls[rowIndex, columnIndex];
                     <td>
-                        <button disabled=@(ballInfo.HasPlayerSelectedIt) 
+                        <button disabled=@ballInfo.HasPlayerSelectedIt 
                                 class="btn @(GetButtonClassForState(ballInfo))"
                                 @onclick=@(() => BallClicked(ballInfo))>
-                                    @ArrangedBalls[rowIndex, columnIndex].Number
+                                    @ballInfo.Number
                         </button>
                     </td>
                 }

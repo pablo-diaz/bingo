@@ -73,7 +73,8 @@ namespace Core
 
         #region Builders
 
-        internal static Result<Board> RandonmlyCreateFromBallSet(Random randomizer, HashSet<Ball> balls, int countPerColumn)
+        internal static Result<Board> RandonmlyCreateFromBallSet(Random randomizer, 
+            HashSet<Ball> balls, int countPerColumn)
         {
             if (balls == null || balls.Count() == 0)
                 return Result.Failure<Board>("You must provide a valid balls array");
@@ -81,7 +82,8 @@ namespace Core
             if(!AreAllRequiredBallsPresent(balls, countPerColumn))
                 return Result.Failure<Board>("There are pending ball types that must be provided");
 
-            HashSet<Ball> ballsToPlayWith = RandomlyCreateBallSet(randomizer, balls, countPerColumn);
+            var ballsToPlayWith = RandomlyCreateBallSet(randomizer, balls, countPerColumn);
+            ballsToPlayWith = RandomlyRemoveBallFromNColumn(randomizer, ballsToPlayWith);
             return Result.Ok(new Board(ballsToPlayWith));
         }
 
@@ -136,6 +138,14 @@ namespace Core
              balls.Where(ball => ball.Letter == BallLeter.N).ToList(),
              balls.Where(ball => ball.Letter == BallLeter.G).ToList(),
              balls.Where(ball => ball.Letter == BallLeter.O).ToList());
+
+        private static HashSet<Ball> RandomlyRemoveBallFromNColumn(Random randomizer, HashSet<Ball> balls)
+        {
+            var nColumnBalls = balls.Where(ball => ball.Letter == BallLeter.N).ToList();
+            var randomIndex = randomizer.Next(0, nColumnBalls.Count - 1);
+            balls.Remove(nColumnBalls[randomIndex]);
+            return balls;
+        }
 
         #endregion
 
