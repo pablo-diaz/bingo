@@ -257,6 +257,12 @@ app {
     border-bottom-width: thin;
 }
 
+.bingo-winner {
+    background-image: url('/img/winner.jpg');
+    background-size: contain;
+    height: 300px;
+}
+
 .bingo-ready-cell {
 }
 

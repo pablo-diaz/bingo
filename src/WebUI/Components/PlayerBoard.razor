@@ -1,4 +1,5 @@
-﻿@using WebUI.Models.GamePlayer 
+﻿@using WebUI.Models.GamePlayer
+@using System.Linq
 
 <div class="container-fluid bingo-board mb-5">
     <div class="row">
@@ -8,25 +9,34 @@
         <div class="col bingo-g-header">G</div>
         <div class="col bingo-o-header">O</div>
     </div>
-    @for(var rowIndex = 0; rowIndex < ArrangedBalls.GetLength(0); rowIndex++)
-    {
-        <div class="row bingo-row">
-        @for (var columnIndex = 0; columnIndex < ArrangedBalls.GetLength(1); columnIndex++)
-        {
-            var ballInfo = ArrangedBalls[rowIndex, columnIndex];
 
-            <div class="col bingo-cell @(GetCellClassForState(ballInfo))"
-                 @onclick=@(() => BallClicked(ballInfo))>
-                <span>
-                    @(ballInfo.IsItSpecialCharacterBall ? "" : ballInfo.Number.ToString())
-                </span>
-            </div>
-        }
+    @for (var rowIndex = 0; rowIndex < ArrangedBalls.GetLength(0); rowIndex++)
+    {
+        <div class="row bingo-row"
+             style="@(IsItWinnerBoard ? "display: none" : "")">
+            @for (var columnIndex = 0; columnIndex < ArrangedBalls.GetLength(1); columnIndex++)
+            {
+                var ballInfo = ArrangedBalls[rowIndex, columnIndex];
+
+                <div class="col bingo-cell @(GetCellClassForState(ballInfo))"
+                     @onclick=@(() => BallClicked(ballInfo))>
+                    <span>
+                        @(ballInfo.IsItSpecialCharacterBall ? "" : ballInfo.Number.ToString())
+                    </span>
+                </div>
+            }
         </div>
     }
+
+    <div class="row bingo-row"
+            style="@(!IsItWinnerBoard ? "display: none" : "")">
+        <div class="col-12 bingo-winner"><p>&nbsp;</p></div>
+    </div>
 </div>
 
 @code {
+    private bool IsItWinnerBoard => Balls.Count == Balls.Count(ball => ball.HasPlayerSelectedIt);
+
     [Parameter]
     public Core.GameType GameType { get; set; }
 
@@ -50,7 +60,7 @@
         var gColumn = Balls.Where(ball => ball.Leter == "G").OrderBy(ball => ball.Number).ToList();
         var oColumn = Balls.Where(ball => ball.Leter == "O").OrderBy(ball => ball.Number).ToList();
 
-        switch(GameType)
+        switch (GameType)
         {
             case Core.GameType.STANDARD: SetArrangedBallsForStandardStructure(bColumn, iColumn, nColumn, gColumn, oColumn); break;
             case Core.GameType.L: SetArrangedBallsForLStructure(bColumn, iColumn, nColumn, gColumn, oColumn); break;
@@ -163,7 +173,7 @@
 
     private void BallClicked(BallModel ballInfo)
     {
-        if(ballInfo.IsItPossibleToSelect)
+        if (ballInfo.IsItPossibleToSelect)
         {
             ballInfo.HasPlayerSelectedIt = true;
             StateHasChanged();

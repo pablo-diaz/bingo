@@ -52,7 +52,7 @@
     <div class="bingo-balls-played"
          style="display: @(player.PlayedBalls.Count > 0 ? "block" : "none")">
         <h4>Bolas jugadas (en el orden en que fueron jugadas)</h4>
-        <div style="width: 350px; overflow-x: auto; white-space: nowrap;">
+        <div style="width: 70vw; overflow-x: auto; white-space: nowrap;">
             @foreach (var ball in player.PlayedBalls)
             {
                 <button disabled class="btn btn-outline-info">@ball.Name</button>
