@@ -13,11 +13,21 @@ namespace Core
         Finished
     }
 
+    public enum GameType
+    {
+        STANDARD,
+        T,
+        L,
+        O,
+        X
+    }
+
     public class Game
     {
         #region Properties
 
         public string Name { get; }
+        public GameType GameType { get; }
         public short WithNBallsMaxPerBoardBucket { get; }
         public GameState State { get; private set; }
         public Maybe<Player> Winner { get; private set; }
@@ -36,9 +46,10 @@ namespace Core
 
         #region Constructors
 
-        private Game(string name, HashSet<Ball> withBalls, short withNBallsMaxPerBoardBucket)
+        private Game(string name, GameType gameType, HashSet<Ball> withBalls, short withNBallsMaxPerBoardBucket)
         {
             this.Name = name;
+            this.GameType = gameType;
             this.State = GameState.Draft;
             this.Winner = Maybe<Player>.None;
             this.WithNBallsMaxPerBoardBucket = withNBallsMaxPerBoardBucket;
@@ -52,7 +63,7 @@ namespace Core
 
         #region Builders
 
-        public static Result<Game> Create(string name, short withNBallsTotal, short withNBallsMaxPerBoardBucket)
+        public static Result<Game> Create(string name, GameType gameType, short withNBallsTotal, short withNBallsMaxPerBoardBucket)
         {
             if (string.IsNullOrEmpty(name))
                 return Result.Failure<Game>("Name should be valid");
@@ -66,7 +77,7 @@ namespace Core
             if (withNBallsMaxPerBoardBucket > ((withNBallsTotal / 5) - 1))
                 return Result.Failure<Game>("Provide enough balls per board bucket, so we can randomly create boards");
 
-            return Result.Ok(new Game(name, CreateNBallsSet(withNBallsTotal), withNBallsMaxPerBoardBucket));
+            return Result.Ok(new Game(name, gameType, CreateNBallsSet(withNBallsTotal), withNBallsMaxPerBoardBucket));
         }
 
         #endregion
@@ -174,7 +185,7 @@ namespace Core
             if(!this._players.Any(p => p.Name == player.Name))
                 return Result.Failure<Board>("Player is not part of Game");
 
-            var newBoardResult = TryCreatingNewBoard(randomizer, tryUpToNTimes: 10);
+            var newBoardResult = TryCreatingNewBoard(randomizer, tryUpToNTimes: 10, this.GameType);
             if (newBoardResult.IsFailure)
                 return newBoardResult;
 
@@ -265,12 +276,13 @@ namespace Core
             return new BallLeter[] { BallLeter.B, BallLeter.I, BallLeter.N, BallLeter.G, BallLeter.O }[bucketIndex];
         }
 
-        private Result<Board> TryCreatingNewBoard(Random randomizer, short tryUpToNTimes)
+        private Result<Board> TryCreatingNewBoard(Random randomizer, short tryUpToNTimes, GameType gameType)
         {
             var tryCount = 1;
             while(tryCount <= tryUpToNTimes)
             {
-                var newBoardResult = Board.RandonmlyCreateFromBallSet(randomizer, this._ballsConfigured, this.WithNBallsMaxPerBoardBucket);
+                var newBoardResult = Board.RandonmlyCreateFromBallSet(randomizer, this._ballsConfigured, 
+                    this.WithNBallsMaxPerBoardBucket, gameType);
                 if (newBoardResult.IsFailure)
                     return newBoardResult;
 

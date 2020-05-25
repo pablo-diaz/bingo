@@ -37,7 +37,8 @@ namespace WebUI.Services
             if (existingGameFound != null)
                 return Result.Failure("There is already a game with the same name. Please try with a different one");
 
-            var newGameResult = Game.Create(name, STANDARD_BALLS_VERSION_TOTAL, STANDARD_BALLS_VERSION_PER_BUCKET_COUNT);
+            GameType gameType = GameType.STANDARD;
+            var newGameResult = Game.Create(name, gameType, STANDARD_BALLS_VERSION_TOTAL, STANDARD_BALLS_VERSION_PER_BUCKET_COUNT);
             if (newGameResult.IsFailure)
                 return newGameResult;
 

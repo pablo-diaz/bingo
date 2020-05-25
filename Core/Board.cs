@@ -74,7 +74,7 @@ namespace Core
         #region Builders
 
         internal static Result<Board> RandonmlyCreateFromBallSet(Random randomizer, 
-            HashSet<Ball> balls, int countPerColumn)
+            HashSet<Ball> balls, int countPerColumn, GameType gameType)
         {
             if (balls == null || balls.Count() == 0)
                 return Result.Failure<Board>("You must provide a valid balls array");
@@ -83,7 +83,7 @@ namespace Core
                 return Result.Failure<Board>("There are pending ball types that must be provided");
 
             var ballsToPlayWith = RandomlyCreateBallSet(randomizer, balls, countPerColumn);
-            ballsToPlayWith = RandomlyRemoveBallFromNColumn(randomizer, ballsToPlayWith);
+            ballsToPlayWith = AdjustBallSetToGameType(gameType, randomizer, ballsToPlayWith);
             return Result.Ok(new Board(ballsToPlayWith));
         }
 
@@ -139,13 +139,61 @@ namespace Core
              balls.Where(ball => ball.Letter == BallLeter.G).ToList(),
              balls.Where(ball => ball.Letter == BallLeter.O).ToList());
 
-        private static HashSet<Ball> RandomlyRemoveBallFromNColumn(Random randomizer, HashSet<Ball> balls)
-        {
-            var nColumnBalls = balls.Where(ball => ball.Letter == BallLeter.N).ToList();
-            var randomIndex = randomizer.Next(0, nColumnBalls.Count - 1);
-            balls.Remove(nColumnBalls[randomIndex]);
-            return balls;
-        }
+        private static HashSet<Ball> AdjustBallSetToGameType(GameType gameType, Random randomizer, 
+                HashSet<Ball> originalBallSet) =>
+            gameType switch { 
+                GameType.STANDARD => RandomlyRemoveBallFromNColumn(randomizer, originalBallSet),
+                GameType.T => RandomlyRemoveBallsForTStructure(randomizer, originalBallSet),
+                GameType.L => RandomlyRemoveBallsForLStructure(randomizer, originalBallSet),
+                GameType.O => RandomlyRemoveBallsForOStructure(randomizer, originalBallSet),
+                GameType.X => RandomlyRemoveBallsForXStructure(randomizer, originalBallSet),
+                _ => throw new ApplicationException($"Unknown game type '{gameType}'")
+            };
+
+        private static HashSet<Ball> RandomlyRemoveBallFromNColumn(Random randomizer, HashSet<Ball> balls) =>
+            balls.AdjustBallsToDesiredCount(randomizer, new Dictionary<BallLeter, int> {
+                { BallLeter.B, 5 },
+                { BallLeter.I, 5 },
+                { BallLeter.N, 4 },
+                { BallLeter.G, 5 },
+                { BallLeter.O, 5 },
+            });
+
+        private static HashSet<Ball> RandomlyRemoveBallsForTStructure(Random randomizer, HashSet<Ball> balls) =>
+            balls.AdjustBallsToDesiredCount(randomizer, new Dictionary<BallLeter, int> {
+                { BallLeter.B, 1 },
+                { BallLeter.I, 1 },
+                { BallLeter.N, 5 },
+                { BallLeter.G, 1 },
+                { BallLeter.O, 1 },
+            });
+
+        private static HashSet<Ball> RandomlyRemoveBallsForLStructure(Random randomizer, HashSet<Ball> balls) =>
+            balls.AdjustBallsToDesiredCount(randomizer, new Dictionary<BallLeter, int> {
+                { BallLeter.B, 5 },
+                { BallLeter.I, 1 },
+                { BallLeter.N, 1 },
+                { BallLeter.G, 1 },
+                { BallLeter.O, 1 },
+            });
+
+        private static HashSet<Ball> RandomlyRemoveBallsForOStructure(Random randomizer, HashSet<Ball> balls) =>
+            balls.AdjustBallsToDesiredCount(randomizer, new Dictionary<BallLeter, int> {
+                { BallLeter.B, 5 },
+                { BallLeter.I, 2 },
+                { BallLeter.N, 2 },
+                { BallLeter.G, 2 },
+                { BallLeter.O, 5 },
+            });
+
+        private static HashSet<Ball> RandomlyRemoveBallsForXStructure(Random randomizer, HashSet<Ball> balls) =>
+            balls.AdjustBallsToDesiredCount(randomizer, new Dictionary<BallLeter, int> {
+                { BallLeter.B, 2 },
+                { BallLeter.I, 2 },
+                { BallLeter.N, 1 },
+                { BallLeter.G, 2 },
+                { BallLeter.O, 2 },
+            });
 
         #endregion
 
@@ -162,5 +210,35 @@ namespace Core
         }
 
         #endregion
+    }
+
+    internal static class BallSetExtensions
+    {
+        public static List<Ball> RandomlyRemoveBallsUntilDesiredCount(this List<Ball> from, Random randomizer, 
+            int desiredCount)
+        {
+            if (from.Count == desiredCount)
+                return from;
+
+            var randomIndex = randomizer.Next(0, from.Count - 1);
+            from.RemoveAt(randomIndex);
+            return from.RandomlyRemoveBallsUntilDesiredCount(randomizer, desiredCount);
+        }
+
+        public static HashSet<Ball> AdjustBallsToDesiredCount(this HashSet<Ball> balls, Random randomizer,
+            Dictionary<BallLeter, int> desiredCountPerColumn)
+        {
+            var fullBallSet = new List<Ball>();
+            foreach (var kvp in desiredCountPerColumn)
+            {
+                var set = balls.Where(ball => ball.Letter == kvp.Key)
+                               .ToList()
+                               .RandomlyRemoveBallsUntilDesiredCount(randomizer, desiredCount: kvp.Value);
+
+                fullBallSet.AddRange(set);
+            }
+
+            return new HashSet<Ball>(fullBallSet);
+        }
     }
 }

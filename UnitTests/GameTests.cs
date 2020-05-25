@@ -312,9 +312,9 @@ namespace UnitTests
         #region Adding Boards to Players
 
         [Test]
-        public void WhenAddingBoardToPlayer_ItWorks()
+        public void WhenAddingStandardBoardToPlayer_ItWorks()
         {
-            var newGameResult = CreateGameWithoutPlayers(withMaxNBallsPerBucket: 5);
+            var newGameResult = CreateGameWithoutPlayers(withMaxNBallsPerBucket: 5, withGameType: GameType.STANDARD);
             var newPlayer = CreateValidPlayer();
             newGameResult.Value.AddPlayer(newPlayer);
 
@@ -327,17 +327,103 @@ namespace UnitTests
             newAddedBoard.BallsConfigured.Should().HaveCount(24);
             newAddedBoard.BallsPlayed.Should().BeEmpty();
             
-            var bColumnCount = newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.B);
-            var iColumnCount = newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.I);
-            var nColumnCount = newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.N);
-            var gColumnCount = newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.G);
-            var oColumnCount = newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.O);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.B).Should().Be(5);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.I).Should().Be(5);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.N).Should().Be(4);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.G).Should().Be(5);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.O).Should().Be(5);
+        }
 
-            bColumnCount.Should().Be(5);
-            iColumnCount.Should().Be(5);
-            nColumnCount.Should().Be(4);
-            gColumnCount.Should().Be(5);
-            oColumnCount.Should().Be(5);
+        [Test]
+        public void WhenAddingLBoardToPlayer_ItWorks()
+        {
+            var newGameResult = CreateGameWithoutPlayers(withMaxNBallsPerBucket: 5, withGameType: GameType.L);
+            var newPlayer = CreateValidPlayer();
+            newGameResult.Value.AddPlayer(newPlayer);
+
+            var addBoardResult = newGameResult.Value.AddBoardToPlayer(this._randomizer, newPlayer);
+            addBoardResult.IsSuccess.Should().BeTrue();
+
+            var newAddedBoard = addBoardResult.Value;
+            newPlayer.Boards.Should().NotBeEmpty()
+                .And.Contain(newAddedBoard);
+            newAddedBoard.BallsConfigured.Should().HaveCount(9);
+            newAddedBoard.BallsPlayed.Should().BeEmpty();
+
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.B).Should().Be(5);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.I).Should().Be(1);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.N).Should().Be(1);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.G).Should().Be(1);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.O).Should().Be(1);
+        }
+
+        [Test]
+        public void WhenAddingOBoardToPlayer_ItWorks()
+        {
+            var newGameResult = CreateGameWithoutPlayers(withMaxNBallsPerBucket: 5, withGameType: GameType.O);
+            var newPlayer = CreateValidPlayer();
+            newGameResult.Value.AddPlayer(newPlayer);
+
+            var addBoardResult = newGameResult.Value.AddBoardToPlayer(this._randomizer, newPlayer);
+            addBoardResult.IsSuccess.Should().BeTrue();
+
+            var newAddedBoard = addBoardResult.Value;
+            newPlayer.Boards.Should().NotBeEmpty()
+                .And.Contain(newAddedBoard);
+            newAddedBoard.BallsConfigured.Should().HaveCount(16);
+            newAddedBoard.BallsPlayed.Should().BeEmpty();
+
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.B).Should().Be(5);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.I).Should().Be(2);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.N).Should().Be(2);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.G).Should().Be(2);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.O).Should().Be(5);
+        }
+
+        [Test]
+        public void WhenAddingTBoardToPlayer_ItWorks()
+        {
+            var newGameResult = CreateGameWithoutPlayers(withMaxNBallsPerBucket: 5, withGameType: GameType.T);
+            var newPlayer = CreateValidPlayer();
+            newGameResult.Value.AddPlayer(newPlayer);
+
+            var addBoardResult = newGameResult.Value.AddBoardToPlayer(this._randomizer, newPlayer);
+            addBoardResult.IsSuccess.Should().BeTrue();
+
+            var newAddedBoard = addBoardResult.Value;
+            newPlayer.Boards.Should().NotBeEmpty()
+                .And.Contain(newAddedBoard);
+            newAddedBoard.BallsConfigured.Should().HaveCount(9);
+            newAddedBoard.BallsPlayed.Should().BeEmpty();
+
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.B).Should().Be(1);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.I).Should().Be(1);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.N).Should().Be(5);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.G).Should().Be(1);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.O).Should().Be(1);
+        }
+
+        [Test]
+        public void WhenAddingXBoardToPlayer_ItWorks()
+        {
+            var newGameResult = CreateGameWithoutPlayers(withMaxNBallsPerBucket: 5, withGameType: GameType.X);
+            var newPlayer = CreateValidPlayer();
+            newGameResult.Value.AddPlayer(newPlayer);
+
+            var addBoardResult = newGameResult.Value.AddBoardToPlayer(this._randomizer, newPlayer);
+            addBoardResult.IsSuccess.Should().BeTrue();
+
+            var newAddedBoard = addBoardResult.Value;
+            newPlayer.Boards.Should().NotBeEmpty()
+                .And.Contain(newAddedBoard);
+            newAddedBoard.BallsConfigured.Should().HaveCount(9);
+            newAddedBoard.BallsPlayed.Should().BeEmpty();
+
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.B).Should().Be(2);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.I).Should().Be(2);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.N).Should().Be(1);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.G).Should().Be(2);
+            newAddedBoard.BallsConfigured.Count(ball => ball.Letter == BallLeter.O).Should().Be(2);
         }
 
         [Test]
@@ -624,8 +710,8 @@ namespace UnitTests
         #region Helpers
 
         private Result<Game> CreateGameWithoutPlayers(string withName = "Name 01", short withTotalBallsCount = 75, 
-            short withMaxNBallsPerBucket = 5) =>
-            Game.Create(withName, withTotalBallsCount, withMaxNBallsPerBucket);
+            short withMaxNBallsPerBucket = 5, GameType withGameType = GameType.STANDARD) =>
+            Game.Create(withName, withGameType, withTotalBallsCount, withMaxNBallsPerBucket);
 
         private (Game game, Player player1, Player player2) CreateDefaultGameWithPlayers(bool shouldBoardsBeAdded = true)
         {
