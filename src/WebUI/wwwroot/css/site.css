@@ -182,35 +182,100 @@ app {
     }
 }
 
-.bingo-board-1 {
-    background-image: url("/img/bg01.jpg");
+.bingo-board {
+    
 }
 
-.bingo-board-1 > thead {
+.bingo-b-header {
+    background-color: orange;
+    text-align: center;
     color: white;
-    background-color: rebeccapurple
+    font-size: x-large;
+    border-top-left-radius: 33%;
+    border-style: solid;
+    border-color: black;
+    border-width: thin;
 }
 
-.bingo-board-2 {
-    background-image: url("/img/bg02.jpg");
-}
-
-.bingo-board-2 > thead {
+.bingo-i-header {
+    background-color: #ecd70e;
+    text-align: center;
     color: white;
-    background-color: rebeccapurple
+    font-size: x-large;
+    border-style: solid;
+    border-color: black;
+    border-width: thin;
 }
 
-.bingo-board-3 {
-    background-image: url("/img/bg03.jpg");
-}
-
-.bingo-board-3 > thead {
+.bingo-n-header {
+    background-color: #03ce31;
+    text-align: center;
     color: white;
-    background-color: rebeccapurple
+    font-size: x-large;
+    border-style: solid;
+    border-color: black;
+    border-width: thin;
+}
+
+.bingo-g-header {
+    background-color: deepskyblue;
+    text-align: center;
+    color: white;
+    font-size: x-large;
+    border-style: solid;
+    border-color: black;
+    border-width: thin;
+}
+
+.bingo-o-header {
+    background-color: mediumpurple;
+    text-align: center;
+    color: white;
+    font-size: x-large;
+    border-top-right-radius: 33%;
+    border-style: solid;
+    border-color: black;
+    border-width: thin;
+}
+
+.bingo-cell {
+    text-align: center;
+    font-weight: bold;
+    font-size: x-large;
+    padding: 10px 10px 10px 10px;
+    background-color: beige;
+}
+
+.bingo-row {
+    border-left-color: black;
+    border-left-style: solid;
+    border-left-width: thin;
+    border-right-color: black;
+    border-right-style: solid;
+    border-right-width: thin;
+    border-bottom-color: black;
+    border-bottom-style: solid;
+    border-bottom-width: thin;
+}
+
+.bingo-ready-cell {
+}
+
+.bingo-possible-cell {
+    background-color: coral;
+    cursor: pointer;
+}
+
+.bingo-blocked-cell {
+    background-image: url('/img/bg01.jpg');
+    cursor: not-allowed;
+}
+
+.bingo-selected-cell {
+    background-color: darkseagreen;
 }
 
 .player-table-messages {
-
 }
 
 .player-table-actions {

@@ -1,34 +1,30 @@
 ﻿@using WebUI.Models.GamePlayer 
 
-<table class="shadow-lg p-3 mb-5 bg-white rounded">
-    <thead>
-        <tr>
-            <th style="text-align: center">B</th>
-            <th style="text-align: center">I</th>
-            <th style="text-align: center">N</th>
-            <th style="text-align: center">G</th>
-            <th style="text-align: center">O</th>
-        </tr>
-    </thead>
-    <tbody>
-        @for(var rowIndex = 0; rowIndex < ArrangedBalls.GetLength(0); rowIndex++)
+<div class="container-fluid bingo-board mb-lg-5">
+    <div class="row">
+        <div class="col bingo-b-header">B</div>
+        <div class="col bingo-i-header">I</div>
+        <div class="col bingo-n-header">N</div>
+        <div class="col bingo-g-header">G</div>
+        <div class="col bingo-o-header">O</div>
+    </div>
+    @for(var rowIndex = 0; rowIndex < ArrangedBalls.GetLength(0); rowIndex++)
+    {
+        <div class="row bingo-row">
+        @for (var columnIndex = 0; columnIndex < ArrangedBalls.GetLength(1); columnIndex++)
         {
-            <tr>
-                @for(var columnIndex = 0; columnIndex < ArrangedBalls.GetLength(1); columnIndex++)
-                {
-                    var ballInfo = ArrangedBalls[rowIndex, columnIndex];
-                    <td>
-                        <button disabled=@ballInfo.HasPlayerSelectedIt 
-                                class="btn @(GetButtonClassForState(ballInfo))"
-                                @onclick=@(() => BallClicked(ballInfo))>
-                                    @(ballInfo.IsItSpecialCharacterBall ? "X" : ballInfo.Number.ToString())
-                        </button>
-                    </td>
-                }
-            </tr>
+            var ballInfo = ArrangedBalls[rowIndex, columnIndex];
+
+            <div class="col bingo-cell @(GetCellClassForState(ballInfo))"
+                 @onclick=@(() => BallClicked(ballInfo))>
+                <span>
+                    @(ballInfo.IsItSpecialCharacterBall ? "" : ballInfo.Number.ToString())
+                </span>
+            </div>
         }
-    </tbody>
-</table>
+        </div>
+    }
+</div>
 
 @code {
     [Parameter]
@@ -154,13 +150,15 @@
         this.ArrangedBalls[4, 4] = oColumn[1];
     }
 
-    private string GetButtonClassForState(BallModel ballInfo)
+    private string GetCellClassForState(BallModel ballInfo)
     {
-        if (ballInfo.HasPlayerSelectedIt) return "btn-success";
+        if (ballInfo.IsItSpecialCharacterBall) return "bingo-blocked-cell";
 
-        if (ballInfo.IsItPossibleToSelect) return "btn-outline-danger";
+        if (ballInfo.HasPlayerSelectedIt) return "bingo-selected-cell";
 
-        return "btn-outline-primary";
+        if (ballInfo.IsItPossibleToSelect) return "bingo-possible-cell";
+
+        return "bingo-ready-cell";
     }
 
     private void BallClicked(BallModel ballInfo)
