@@ -64,7 +64,8 @@
             @foreach (var board in player.PlayerModel.Boards)
             {
                 <div class="col">
-                    <PlayerBoard BoardNumber=@(GetNextBoardNumber()) Balls=@board.Balls />
+                    <PlayerBoard GameType=@player.PlayerModel.GameType
+                                 Balls=@board.Balls />
                 </div>
             }
         </div>
@@ -72,14 +73,10 @@
 }
 
 @code {
-    private int _boardCounter = 0;
-
     protected override async Task OnInitializedAsync()
     {
         await player.InitializeComponent(() => UpdateUI());
     }
-
-    private int GetNextBoardNumber() => ++this._boardCounter;
 
     private void UpdateUI()
     {

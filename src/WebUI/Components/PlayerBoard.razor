@@ -1,6 +1,6 @@
 ﻿@using WebUI.Models.GamePlayer 
 
-<table class="shadow-lg p-3 mb-5 bg-white rounded @(GetBoardClass())">
+<table class="shadow-lg p-3 mb-5 bg-white rounded">
     <thead>
         <tr>
             <th style="text-align: center">B</th>
@@ -32,7 +32,7 @@
 
 @code {
     [Parameter]
-    public int BoardNumber { get; set; }
+    public Core.GameType GameType { get; set; }
 
     [Parameter]
     public List<BallModel> Balls { get; set; }
@@ -41,14 +41,44 @@
 
     protected override void OnInitialized()
     {
+        SetArrangedBallsAccordingToGameType();
+    }
+
+    private void SetArrangedBallsAccordingToGameType()
+    {
+        InitArrangedBallsByDefault();
+
         var bColumn = Balls.Where(ball => ball.Leter == "B").OrderBy(ball => ball.Number).ToList();
         var iColumn = Balls.Where(ball => ball.Leter == "I").OrderBy(ball => ball.Number).ToList();
         var nColumn = Balls.Where(ball => ball.Leter == "N").OrderBy(ball => ball.Number).ToList();
         var gColumn = Balls.Where(ball => ball.Leter == "G").OrderBy(ball => ball.Number).ToList();
         var oColumn = Balls.Where(ball => ball.Leter == "O").OrderBy(ball => ball.Number).ToList();
 
+        switch(GameType)
+        {
+            case Core.GameType.STANDARD: SetArrangedBallsForStandardStructure(bColumn, iColumn, nColumn, gColumn, oColumn); break;
+            case Core.GameType.L: SetArrangedBallsForLStructure(bColumn, iColumn, nColumn, gColumn, oColumn); break;
+            case Core.GameType.O: SetArrangedBallsForOStructure(bColumn, iColumn, nColumn, gColumn, oColumn); break;
+            case Core.GameType.T: SetArrangedBallsForTStructure(bColumn, iColumn, nColumn, gColumn, oColumn); break;
+            case Core.GameType.X: SetArrangedBallsForXStructure(bColumn, iColumn, nColumn, gColumn, oColumn); break;
+            default: throw new ApplicationException("Unknown game type");
+        }
+    }
+
+    private void InitArrangedBallsByDefault()
+    {
         this.ArrangedBalls = new BallModel[5, 5];
-        for(var rowIndex = 0; rowIndex < 5; rowIndex++)
+        for (var rowIndex = 0; rowIndex < 5; rowIndex++)
+        {
+            for (var columnIndex = 0; columnIndex < 5; columnIndex++)
+                this.ArrangedBalls[rowIndex, columnIndex] = BallModel.CreateSpecialCharacterBall();
+        }
+    }
+
+    private void SetArrangedBallsForStandardStructure(List<BallModel> bColumn, List<BallModel> iColumn,
+        List<BallModel> nColumn, List<BallModel> gColumn, List<BallModel> oColumn)
+    {
+        for (var rowIndex = 0; rowIndex < 5; rowIndex++)
         {
             this.ArrangedBalls[rowIndex, 0] = bColumn[rowIndex];
             this.ArrangedBalls[rowIndex, 1] = iColumn[rowIndex];
@@ -60,9 +90,68 @@
                 var nColumnRowIndex = rowIndex < 2 ? rowIndex : rowIndex - 1;
                 this.ArrangedBalls[rowIndex, 2] = nColumn[nColumnRowIndex];
             }
-            else
-                this.ArrangedBalls[rowIndex, 2] = BallModel.CreateSpecialCharacterBall();
         }
+    }
+
+    private void SetArrangedBallsForTStructure(List<BallModel> bColumn, List<BallModel> iColumn,
+        List<BallModel> nColumn, List<BallModel> gColumn, List<BallModel> oColumn)
+    {
+        this.ArrangedBalls[0, 0] = bColumn[0];
+        this.ArrangedBalls[0, 1] = iColumn[0];
+        this.ArrangedBalls[0, 3] = gColumn[0];
+        this.ArrangedBalls[0, 4] = oColumn[0];
+
+        for (var index = 0; index < 5; index++)
+            this.ArrangedBalls[index, 2] = nColumn[index];
+    }
+
+    private void SetArrangedBallsForLStructure(List<BallModel> bColumn, List<BallModel> iColumn,
+        List<BallModel> nColumn, List<BallModel> gColumn, List<BallModel> oColumn)
+    {
+        for (var index = 0; index < 5; index++)
+            this.ArrangedBalls[index, 0] = bColumn[index];
+
+        this.ArrangedBalls[4, 1] = iColumn[0];
+        this.ArrangedBalls[4, 2] = nColumn[0];
+        this.ArrangedBalls[4, 3] = gColumn[0];
+        this.ArrangedBalls[4, 4] = oColumn[0];
+    }
+
+    private void SetArrangedBallsForOStructure(List<BallModel> bColumn, List<BallModel> iColumn,
+        List<BallModel> nColumn, List<BallModel> gColumn, List<BallModel> oColumn)
+    {
+        for (var index = 0; index < 5; index++)
+            this.ArrangedBalls[index, 0] = bColumn[index];
+
+        for (var index = 0; index < 5; index++)
+            this.ArrangedBalls[index, 4] = oColumn[index];
+
+        this.ArrangedBalls[0, 1] = iColumn[0];
+        this.ArrangedBalls[4, 1] = iColumn[1];
+
+        this.ArrangedBalls[0, 2] = nColumn[0];
+        this.ArrangedBalls[4, 2] = nColumn[1];
+
+        this.ArrangedBalls[0, 3] = gColumn[0];
+        this.ArrangedBalls[4, 3] = gColumn[1];
+    }
+
+    private void SetArrangedBallsForXStructure(List<BallModel> bColumn, List<BallModel> iColumn,
+        List<BallModel> nColumn, List<BallModel> gColumn, List<BallModel> oColumn)
+    {
+        this.ArrangedBalls[0, 0] = bColumn[0];
+        this.ArrangedBalls[4, 0] = bColumn[1];
+
+        this.ArrangedBalls[1, 1] = iColumn[0];
+        this.ArrangedBalls[3, 1] = iColumn[1];
+
+        this.ArrangedBalls[2, 2] = nColumn[0];
+
+        this.ArrangedBalls[1, 3] = gColumn[0];
+        this.ArrangedBalls[3, 3] = gColumn[1];
+
+        this.ArrangedBalls[0, 4] = oColumn[0];
+        this.ArrangedBalls[4, 4] = oColumn[1];
     }
 
     private string GetButtonClassForState(BallModel ballInfo)
@@ -81,11 +170,5 @@
             ballInfo.HasPlayerSelectedIt = true;
             StateHasChanged();
         }
-    }
-
-    private string GetBoardClass()
-    {
-        var boardClasses = new string[] { "bingo-board-1", "bingo-board-2", "bingo-board-3" };
-        return boardClasses[this.BoardNumber % boardClasses.Length];
     }
 }

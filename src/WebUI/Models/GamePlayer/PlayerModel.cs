@@ -7,6 +7,7 @@ namespace WebUI.Models.GamePlayer
     public class PlayerModel
     {
         public string Name { get; set; }
+        public GameType GameType { get; set; }
 
         public List<BoardModel> Boards { get; set; }
 
@@ -20,9 +21,10 @@ namespace WebUI.Models.GamePlayer
             }
         }
 
-        public static PlayerModel FromEntity(Player entity) =>
+        public static PlayerModel FromEntity(Player entity, GameType gameType) =>
             new PlayerModel { 
-                Name = entity.Name, 
+                Name = entity.Name,
+                GameType = gameType,
                 Boards = entity.Boards
                                .Select(board => new BoardModel {
                     Balls = board.BallsConfigured

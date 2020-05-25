@@ -97,7 +97,7 @@ namespace WebUI.ViewModels
             DisplayBallsPlayedRecentlyBeforeLoggin(resultInfo.BallsPlayedRecently);
             await this.StartBingoHubConnection(resultInfo.JWTPlayerToken);
 
-            this.PlayerModel = PlayerModel.FromEntity(resultInfo.LoggedInPlayer);
+            this.PlayerModel = PlayerModel.FromEntity(resultInfo.LoggedInPlayer, this.GameSelected.GameType);
             this._currentState = State.LOGGED_IN;
             return;
         }
