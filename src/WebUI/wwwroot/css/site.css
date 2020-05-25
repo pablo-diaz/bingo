@@ -183,7 +183,6 @@ app {
 }
 
 .bingo-board {
-    
 }
 
 .bingo-b-header {
@@ -273,6 +272,11 @@ app {
 
 .bingo-selected-cell {
     background-color: darkseagreen;
+}
+
+.bingo-balls-played {
+    margin: 30px;
+    box-shadow: 1px -1px 20px 0px black;
 }
 
 .player-table-messages {

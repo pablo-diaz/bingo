@@ -47,11 +47,12 @@
 
 @if (player.CanLoggedInSectionBeShown)
 {
-    <h1>Hola @player.PlayerModel.Name Bienvenido al juego @player.GameSelected.Name</h1>
+    <h3>Hola @player.PlayerModel.Name, bienvenido al juego @player.GameSelected.Name</h3>
 
-    <div>
-        <h2>Bolas jugadas (en el orden en que fueron jugadas)</h2>
-        <div style="width: 400px; overflow-x: auto; white-space: nowrap;">
+    <div class="bingo-balls-played"
+         style="display: @(player.PlayedBalls.Count > 0 ? "block" : "none")">
+        <h4>Bolas jugadas (en el orden en que fueron jugadas)</h4>
+        <div style="width: 350px; overflow-x: auto; white-space: nowrap;">
             @foreach (var ball in player.PlayedBalls)
             {
                 <button disabled class="btn btn-outline-info">@ball.Name</button>
