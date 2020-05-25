@@ -13,6 +13,9 @@ namespace WebUI.Models.GameAdmon
         [StringLength(100, ErrorMessage = "El nombre es muy largo. Intenta con uno más corto")]
         public string Name { get; set; }
 
+        [Required(ErrorMessage = "Por favor selecciona el tipo de juego")]
+        public GameType? GameType { get; set; }
+
         public int PlayerCount { get => Players.Count; }
 
         public string State { get; set; }
@@ -29,6 +32,7 @@ namespace WebUI.Models.GameAdmon
 
         public static GameModel FromEntity(Game entity) =>
             new GameModel { Name = entity.Name, 
+                            GameType = entity.GameType,
                             Players = entity.Players.Select(player => PlayerModel.FromEntity(player, entity.Winner.HasValue ? player == entity.Winner.Value : false)).ToList(),
                             GameEntity = entity,
                             State = entity.State switch {

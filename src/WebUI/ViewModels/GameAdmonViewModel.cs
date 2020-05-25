@@ -102,7 +102,7 @@ namespace WebUI.ViewModels
 
         public Task CreateNewGame()
         {
-            var addNewGameResult = this._gamingComunication.AddStandardGame(this.GameModel.Name);
+            var addNewGameResult = this._gamingComunication.AddStandardGame(this.GameModel.Name, this.GameModel.GameType.Value);
             if(addNewGameResult.IsFailure)
             {
                 this._toastService.ShowError(addNewGameResult.Error);
@@ -305,10 +305,12 @@ namespace WebUI.ViewModels
 
         public Task AddTestGames()
         {
+            var gameTypes = new GameType[] { GameType.L, GameType.O, GameType.STANDARD, GameType.T, GameType.X };
             Enumerable.Range(1, 10)
                 .ToList()
                 .ForEach(testGameId => {
-                    var addNewGameResult = this._gamingComunication.AddStandardGame($"Game_{testGameId}");
+                    var gameType = gameTypes[testGameId % gameTypes.Length];
+                    var addNewGameResult = this._gamingComunication.AddStandardGame($"Game_{testGameId}", gameType);
                 });
 
             return Task.CompletedTask;

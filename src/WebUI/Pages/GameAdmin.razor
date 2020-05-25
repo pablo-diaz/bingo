@@ -32,6 +32,7 @@
             <tr>
                 <th>Nombre</th>
                 <th>Jugadores</th>
+                <th>Tipo</th>
                 <th>Estado</th>
             </tr>
         </thead>
@@ -41,6 +42,7 @@
                 <tr>
                     <td><button type="button" class="btn btn-link" @onclick=@(() => admon.TransitionToEditGame(game))>@game.Name</button></td>
                     <td>@game.PlayerCount</td>
+                    <td>@game.GameType</td>
                     <td>@game.State</td>
                 </tr>
             }
@@ -59,6 +61,33 @@
                 <ValidationMessage For="@(() => admon.GameModel.Name)" />
             </div>
         </div>
+        <div class="form-row">
+            <div class="col">
+                <label for=@admon.GameModel.GameType>Selecciona el tipo de juego</label>
+                <ul class="list-group">
+                    <li class="list-group-item @(admon.GameModel.GameType == Core.GameType.STANDARD ? "active" : "")"
+                        @onclick=@(() => admon.GameModel.GameType = Core.GameType.STANDARD)
+                        style="cursor: pointer">Estándar</li>
+
+                    <li class="list-group-item @(admon.GameModel.GameType == Core.GameType.O ? "active" : "")"
+                        @onclick=@(() => admon.GameModel.GameType = Core.GameType.O)
+                        style="cursor: pointer">Tipo O</li>
+
+                    <li class="list-group-item @(admon.GameModel.GameType == Core.GameType.X ? "active" : "")"
+                        @onclick=@(() => admon.GameModel.GameType = Core.GameType.X)
+                        style="cursor: pointer">Tipo X</li>
+
+                    <li class="list-group-item @(admon.GameModel.GameType == Core.GameType.T ? "active" : "")"
+                        @onclick=@(() => admon.GameModel.GameType = Core.GameType.T)
+                        style="cursor: pointer">Tipo T</li>
+
+                    <li class="list-group-item @(admon.GameModel.GameType == Core.GameType.L ? "active" : "")"
+                        @onclick=@(() => admon.GameModel.GameType = Core.GameType.L)
+                        style="cursor: pointer">Tipo L</li>
+                </ul>
+                <ValidationMessage For="@(() => admon.GameModel.GameType)" />
+            </div>
+        </div>
         <button type="reset" class="btn btn-secondary" @onclick=admon.CancelCreatingNewGame>Cancelar</button>
         <button type="submit" class="btn btn-primary">Crear juego</button>
     </EditForm>
@@ -66,7 +95,7 @@
 
 @if (admon.CanEditGameSectionBeShown)
 {
-    <h2>Juego: @admon.GameModel.Name <span class="badge badge-info">@admon.GameModel.State</span></h2>
+    <h2>Juego: @admon.GameModel.Name <span class="badge badge-info">Tipo @admon.GameModel.GameType - @admon.GameModel.State</span></h2>
     <button class="btn btn-outline-info" @onclick=admon.TransitionToBrowsing>Regresar a listado de juegos</button>
     <button class="btn btn-primary" @onclick=admon.TransitionToNewPlayer style=@(admon.GameModel.IsItADraftGame ? "" : "display: none;")>Crear nuevo jugador</button>
     <button class="btn btn-warning" @onclick=admon.AddTestPlayers style=@(admon.GameModel.IsItADraftGame && admon.IsItInDevMode ? "" : "display: none;")>Agregar jugadores de prueba</button>

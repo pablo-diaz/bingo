@@ -30,14 +30,13 @@ namespace WebUI.Services
             this._bingoSecurity = bingoSecurity;
         }
 
-        public Result AddStandardGame(string name)
+        public Result AddStandardGame(string name, GameType gameType)
         {
             name = name.Trim();
             var existingGameFound = this._games.FirstOrDefault(game => game.Name == name);
             if (existingGameFound != null)
                 return Result.Failure("There is already a game with the same name. Please try with a different one");
 
-            GameType gameType = GameType.STANDARD;
             var newGameResult = Game.Create(name, gameType, STANDARD_BALLS_VERSION_TOTAL, STANDARD_BALLS_VERSION_PER_BUCKET_COUNT);
             if (newGameResult.IsFailure)
                 return newGameResult;
