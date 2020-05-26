@@ -1,9 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 using Core;
-using System;
+using WebUI.Services.DTOs;
 
 namespace WebUI.Models.GameAdmon
 {
@@ -20,7 +21,7 @@ namespace WebUI.Models.GameAdmon
 
         public string State { get; set; }
 
-        public bool IsItADraftGame { get => GameEntity.State == GameState.Draft; }
+        public bool IsItADraftGame { get => GameEntity.GameStatus == GameStatus.DRAFT; }
 
         public List<PlayerModel> Players { get; set; }
 
@@ -28,17 +29,17 @@ namespace WebUI.Models.GameAdmon
 
         public List<BallModel> BallsPlayed { get; set; }
 
-        public Game GameEntity { get; set; }
+        public GameDTO GameEntity { get; set; }
 
-        public static GameModel FromEntity(Game entity) =>
+        public static GameModel FromEntity(GameDTO entity) =>
             new GameModel { Name = entity.Name, 
                             GameType = entity.GameType,
                             Players = entity.Players.Select(player => PlayerModel.FromEntity(player, entity.Winner.HasValue ? player == entity.Winner.Value : false)).ToList(),
                             GameEntity = entity,
-                            State = entity.State switch {
-                                GameState.Draft => "Borrador [No Iniciado]",
-                                GameState.Started => "Iniciado [Jugando]",
-                                GameState.Finished => $"Finalizado [Ganador: {entity.Winner.Value.Name}]",
+                            State = entity.GameStatus switch {
+                                GameStatus.DRAFT => "Borrador [No Iniciado]",
+                                GameStatus.ACTIVE => "Iniciado [Jugando]",
+                                GameStatus.FINISHED => $"Finalizado [Ganador: {entity.Winner.Value.Name}]",
                                 _ => "Estado desconocido"
                             },
                             MasterBoard = BuildMasterBoardState(entity),
@@ -49,7 +50,7 @@ namespace WebUI.Models.GameAdmon
                                                             .ToList()
             };
 
-        private static Dictionary<string, List<BallModel>> BuildMasterBoardState(Game game)
+        private static Dictionary<string, List<BallModel>> BuildMasterBoardState(GameDTO game)
         {
             var result = new Dictionary<string, List<BallModel>>() {
                 { "B", GetBallsByLetter(game, BallLeter.B) },
@@ -62,7 +63,7 @@ namespace WebUI.Models.GameAdmon
             return result;
         }
 
-        private static List<BallModel> GetBallsByLetter(Game game, BallLeter letter)
+        private static List<BallModel> GetBallsByLetter(GameDTO game, BallLeter letter)
         {
             return game.BallsConfigured.Where(ball => ball.Letter == letter)
                 .Select(ball => new BallModel { 

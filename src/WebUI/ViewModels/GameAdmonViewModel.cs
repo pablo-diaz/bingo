@@ -12,6 +12,7 @@ using Blazored.Toast.Services;
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Configuration;
 using System;
+using WebUI.Services.DTOs;
 
 namespace WebUI.ViewModels
 {
@@ -141,7 +142,7 @@ namespace WebUI.ViewModels
 
         public Task SavePlayerInfo()
         {
-            Game game = null;
+            GameDTO game = null;
 
             if(this._currentState == State.CREATING_PLAYER)
             {
@@ -268,7 +269,7 @@ namespace WebUI.ViewModels
             HandleBallPlayedResult(playBallResult);
         }
 
-        private void HandleBallPlayedResult(Result<Game> playBallResult)
+        private void HandleBallPlayedResult(Result<GameDTO> playBallResult)
         {
             if (playBallResult.IsFailure)
             {
@@ -318,7 +319,7 @@ namespace WebUI.ViewModels
 
         public Task AddTestPlayers()
         {
-            Game gameInContext = null;
+            GameDTO gameInContext = null;
             Enumerable.Range(1, 7)
                 .ToList()
                 .ForEach(testPlayerNumber => {

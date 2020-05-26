@@ -3,12 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
+using WebUI.Services.DTOs;
 using WebUI.Infrastructure;
 
 using Core;
 
 using CSharpFunctionalExtensions;
-using WebUI.Services.DTOs;
 
 namespace WebUI.Services
 {
@@ -17,14 +17,14 @@ namespace WebUI.Services
         private const short STANDARD_BALLS_VERSION_TOTAL = 75;
         private const short STANDARD_BALLS_VERSION_PER_BUCKET_COUNT = 5;
 
-        private readonly List<Game> _games;
+        private readonly List<GameDTO> _games;
         private readonly Random _randomizer;
         private readonly BingoHub _bingoHub;
         private readonly BingoSecurity _bingoSecurity;
 
         public GamingComunication(BingoHub bingoHub, BingoSecurity bingoSecurity)
         {
-            this._games = new List<Game>();
+            this._games = new List<GameDTO>();
             this._randomizer = new Random();
             this._bingoHub = bingoHub;
             this._bingoSecurity = bingoSecurity;
@@ -37,16 +37,16 @@ namespace WebUI.Services
             if (existingGameFound != null)
                 return Result.Failure("There is already a game with the same name. Please try with a different one");
 
-            var newGameResult = Game.Create(name, gameType, STANDARD_BALLS_VERSION_TOTAL, STANDARD_BALLS_VERSION_PER_BUCKET_COUNT);
-            if (newGameResult.IsFailure)
-                return newGameResult;
+            var draftGameResult = DraftGame.Create(name, gameType, STANDARD_BALLS_VERSION_TOTAL, STANDARD_BALLS_VERSION_PER_BUCKET_COUNT);
+            if (draftGameResult.IsFailure)
+                return draftGameResult;
 
-            this._games.Add(newGameResult.Value);
+            this._games.Add(GameDTO.CreateFromDraftGame(draftGameResult.Value));
 
             return Result.Ok();
         }
 
-        public Result<Game> AddNewPlayerToGame(string gameName, string playerName, string playerLogin, string playerPassword)
+        public Result<GameDTO> AddNewPlayerToGame(string gameName, string playerName, string playerLogin, string playerPassword)
         {
             gameName = gameName.Trim();
             playerName = playerName.Trim();
@@ -55,24 +55,24 @@ namespace WebUI.Services
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == gameName);
             if (gameFound == null)
-                return Result.Failure<Game>("Game has not been found by its name");
+                return Result.Failure<GameDTO>("Game has not been found by its name");
 
             var newPlayerSecurityResult = PlayerSecurity.Create(playerLogin, playerPassword);
             if (newPlayerSecurityResult.IsFailure)
-                return Result.Failure<Game>(newPlayerSecurityResult.Error);
+                return Result.Failure<GameDTO>(newPlayerSecurityResult.Error);
 
             var newPlayerResult = Player.Create(playerName, newPlayerSecurityResult.Value);
             if (newPlayerResult.IsFailure)
-                return Result.Failure<Game>(newPlayerResult.Error);
+                return Result.Failure<GameDTO>(newPlayerResult.Error);
             
             var addPlayerResult = gameFound.AddPlayer(newPlayerResult.Value);
             if (addPlayerResult.IsFailure)
-                return Result.Failure<Game>(addPlayerResult.Error);
+                return Result.Failure<GameDTO>(addPlayerResult.Error);
 
             return Result.Ok(gameFound);
         }
 
-        public Result<Game> UpdatePlayerInfoInGame(string gameName, Player existingPlayer, 
+        public Result<GameDTO> UpdatePlayerInfoInGame(string gameName, Player existingPlayer, 
             string newPlayerName, string newPlayerLogin, string newPlayerPassword)
         {
             gameName = gameName.Trim();
@@ -82,160 +82,160 @@ namespace WebUI.Services
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == gameName);
             if (gameFound == null)
-                return Result.Failure<Game>("Game has not been found by its name");
+                return Result.Failure<GameDTO>("Game has not been found by its name");
 
-            var existingPlayerFound = gameFound.Players.FirstOrDefault(player => player == existingPlayer);
+            var existingPlayerFound = gameFound.FindPlayer(existingPlayer);
             if (existingPlayerFound == null)
-                return Result.Failure<Game>("Existing player was not found in game");
+                return Result.Failure<GameDTO>("Existing player was not found in game");
 
             var newPlayerSecurityResult = PlayerSecurity.Create(newPlayerLogin, newPlayerPassword);
             if (newPlayerSecurityResult.IsFailure)
-                return Result.Failure<Game>(newPlayerSecurityResult.Error);
+                return Result.Failure<GameDTO>(newPlayerSecurityResult.Error);
 
             var newPlayerInfoResult = Player.Create(newPlayerName, newPlayerSecurityResult.Value);
             if (newPlayerInfoResult.IsFailure)
-                return Result.Failure<Game>(newPlayerInfoResult.Error);
+                return Result.Failure<GameDTO>(newPlayerInfoResult.Error);
 
             var updatePlayerResult = gameFound.UpdatePlayer(existingPlayerFound, newPlayerInfoResult.Value);
             if (updatePlayerResult.IsFailure)
-                return Result.Failure<Game>(updatePlayerResult.Error);
+                return Result.Failure<GameDTO>(updatePlayerResult.Error);
 
             return Result.Ok(gameFound);
         }
 
-        public Result<Game> AddBoardToPlayer(string inGameName, string toPlayerName)
+        public Result<GameDTO> AddBoardToPlayer(string inGameName, string toPlayerName)
         {
             inGameName = inGameName.Trim();
             toPlayerName = toPlayerName.Trim();
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == inGameName);
             if (gameFound == null)
-                return Result.Failure<Game>("Game has not been found by its name");
+                return Result.Failure<GameDTO>("Game has not been found by its name");
 
-            var playerFound = gameFound.Players.FirstOrDefault(player => player.Name == toPlayerName);
+            var playerFound = gameFound.FindPlayer(toPlayerName);
             if (playerFound == null)
-                return Result.Failure<Game>("Player has not been found by its name");
+                return Result.Failure<GameDTO>("Player has not been found by its name");
 
             var addBoardResult = gameFound.AddBoardToPlayer(this._randomizer, playerFound);
             if (addBoardResult.IsFailure)
-                return Result.Failure<Game>(addBoardResult.Error);
+                return Result.Failure<GameDTO>(addBoardResult.Error);
 
             return Result.Ok(gameFound);
         }
 
-        public Result<Game> RemoveBoardFromPlayer(string inGameName, string fromPlayerName)
+        public Result<GameDTO> RemoveBoardFromPlayer(string inGameName, string fromPlayerName)
         {
             inGameName = inGameName.Trim();
             fromPlayerName = fromPlayerName.Trim();
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == inGameName);
             if (gameFound == null)
-                return Result.Failure<Game>("Game has not been found by its name");
+                return Result.Failure<GameDTO>("Game has not been found by its name");
 
-            var playerFound = gameFound.Players.FirstOrDefault(player => player.Name == fromPlayerName);
+            var playerFound = gameFound.FindPlayer(fromPlayerName);
             if (playerFound == null)
-                return Result.Failure<Game>("Player has not been found by its name");
+                return Result.Failure<GameDTO>("Player has not been found by its name");
 
             var lastBoardFound = playerFound.Boards.LastOrDefault();
             if(lastBoardFound == null)
-                return Result.Failure<Game>("Player does not have any boards left");
+                return Result.Failure<GameDTO>("Player does not have any boards left");
 
             var removeBoardResult = gameFound.RemoveBoardFromPlayer(playerFound, lastBoardFound);
             if (removeBoardResult.IsFailure)
-                return Result.Failure<Game>(removeBoardResult.Error);
+                return Result.Failure<GameDTO>(removeBoardResult.Error);
 
             return Result.Ok(gameFound);
         }
 
-        public Result<Game> RemovePlayer(string inGameName, string playerNameToRemove)
+        public Result<GameDTO> RemovePlayer(string inGameName, string playerNameToRemove)
         {
             inGameName = inGameName.Trim();
             playerNameToRemove = playerNameToRemove.Trim();
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == inGameName);
             if (gameFound == null)
-                return Result.Failure<Game>("Game has not been found by its name");
+                return Result.Failure<GameDTO>("Game has not been found by its name");
 
-            var playerFound = gameFound.Players.FirstOrDefault(player => player.Name == playerNameToRemove);
+            var playerFound = gameFound.FindPlayer(playerNameToRemove);
             if (playerFound == null)
-                return Result.Failure<Game>("Player has not been found by its name");
+                return Result.Failure<GameDTO>("Player has not been found by its name");
 
             var removePlayerResult = gameFound.RemovePlayer(playerFound);
             if (removePlayerResult.IsFailure)
-                return Result.Failure<Game>(removePlayerResult.Error);
+                return Result.Failure<GameDTO>(removePlayerResult.Error);
 
             return Result.Ok(gameFound);
         }
 
-        public Result<Game> StartGame(string gameName)
+        public Result<GameDTO> StartGame(string gameName)
         {
             gameName = gameName.Trim();
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == gameName);
             if (gameFound == null)
-                return Result.Failure<Game>("Game has not been found by its name");
+                return Result.Failure<GameDTO>("Game has not been found by its name");
 
             var gameStartResult = gameFound.Start();
             if(gameStartResult.IsFailure)
-                return Result.Failure<Game>(gameStartResult.Error);
+                return Result.Failure<GameDTO>(gameStartResult.Error);
 
             return Result.Ok(gameFound);
         }
 
-        public async Task<Result<Game>> PlayBall(string inGameName, string ballName)
+        public async Task<Result<GameDTO>> PlayBall(string inGameName, string ballName)
         {
             inGameName = inGameName.Trim();
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == inGameName);
             if (gameFound == null)
-                return Result.Failure<Game>("Game has not been found by its name");
+                return Result.Failure<GameDTO>("Game has not been found by its name");
 
-            var ballFound = gameFound.BallsConfigured.FirstOrDefault(ball => ball.Name == ballName);
+            var ballFound = gameFound.FindBallConfigured(ballName);
             if(ballFound == null)
-                return Result.Failure<Game>("Ball has not been found by its name");
+                return Result.Failure<GameDTO>("Ball has not been found by its name");
 
             var playBallResult = gameFound.PlayBall(ballFound);
             if (playBallResult.IsFailure)
-                return Result.Failure<Game>(playBallResult.Error);
+                return Result.Failure<GameDTO>(playBallResult.Error);
 
             await this._bingoHub.SendBallPlayedMessage(inGameName, new Infrastructure.DTOs.BallDTO { Name = ballFound.Name });
 
             return Result.Ok(gameFound);
         }
 
-        public async Task<Result<Game>> RandomlyPlayBall(string inGameName)
+        public async Task<Result<GameDTO>> RandomlyPlayBall(string inGameName)
         {
             inGameName = inGameName.Trim();
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == inGameName);
             if (gameFound == null)
-                return Result.Failure<Game>("Game has not been found by its name");
+                return Result.Failure<GameDTO>("Game has not been found by its name");
 
             var playBallResult = gameFound.RadmonlyPlayBall(this._randomizer);
             if (playBallResult.IsFailure)
-                return Result.Failure<Game>(playBallResult.Error);
+                return Result.Failure<GameDTO>(playBallResult.Error);
 
             await this._bingoHub.SendBallPlayedMessage(inGameName, new Infrastructure.DTOs.BallDTO { Name = playBallResult.Value.Name });
 
             return Result.Ok(gameFound);
         }
 
-        public async Task<Result<Game>> SetWinner(string inGameName, string winnerName)
+        public async Task<Result<GameDTO>> SetWinner(string inGameName, string winnerName)
         {
             inGameName = inGameName.Trim();
             winnerName = winnerName.Trim();
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == inGameName);
             if (gameFound == null)
-                return Result.Failure<Game>("Game has not been found by its name");
+                return Result.Failure<GameDTO>("Game has not been found by its name");
 
-            var playerFound = gameFound.Players.FirstOrDefault(player => player.Name == winnerName);
+            var playerFound = gameFound.FindPlayer(winnerName);
             if (playerFound == null)
-                return Result.Failure<Game>("Player has not been found by its name");
+                return Result.Failure<GameDTO>("Player has not been found by its name");
 
             var settingWinnerResult = gameFound.SetWinner(playerFound);
             if (settingWinnerResult.IsFailure)
-                return Result.Failure<Game>(settingWinnerResult.Error);
+                return Result.Failure<GameDTO>(settingWinnerResult.Error);
 
             await this._bingoHub.SendWinnerMessage(inGameName, winnerName);
 
@@ -253,9 +253,7 @@ namespace WebUI.Services
             if (gameFound == null)
                 return Result.Failure<(bool, LoginResultDTO)>("Game has not been found by its name");
 
-            var playerFound = gameFound.Players
-                .FirstOrDefault(player => player.Security.Login == login && player.Security.Password == passwd);
-
+            var playerFound = gameFound.FindPlayer(login, passwd);
             if(playerFound == null)
                 return Result.Ok<(bool, LoginResultDTO)>((false, null));
 
@@ -264,15 +262,15 @@ namespace WebUI.Services
             return Result.Ok<(bool, LoginResultDTO)>((true, loginResult));
         }
 
-        public IReadOnlyCollection<Game> GetAllGames() =>
+        public IReadOnlyCollection<GameDTO> GetAllGames() =>
             this._games
                 .OrderBy(game => game.Name)
                 .ToList()
                 .AsReadOnly();
 
-        public IReadOnlyCollection<Game> GetPlayableGames() =>
+        public IReadOnlyCollection<GameDTO> GetPlayableGames() =>
             this._games
-                .Where(game => game.State == GameState.Started)
+                .Where(game => game.IsItPlayable)
                 .OrderBy(game => game.Name)
                 .ToList()
                 .AsReadOnly();

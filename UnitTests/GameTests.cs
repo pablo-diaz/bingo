@@ -25,24 +25,10 @@ namespace UnitTests
         #region New Game tests
 
         [Test]
-        public void WhenCreatingANewGame_ItsDefaultStateIsDraft()
-        {
-            var newGameResult = CreateGameWithoutPlayers();
-            newGameResult.Value.State.Should().Be(GameState.Draft);
-        }
-
-        [Test]
         public void WhenCreatingANewGame_ItsMaxBallsPerBucket_ShouldBeSet()
         {
             var newGameResult = CreateGameWithoutPlayers(withMaxNBallsPerBucket: 5);
             newGameResult.Value.WithNBallsMaxPerBoardBucket.Should().Be(5);
-        }
-
-        [Test]
-        public void WhenCreatingANewGame_ItsWinner_ShouldNotBeSet()
-        {
-            (var newGame, var _, var __) = CreateDefaultGameWithPlayers();
-            newGame.Winner.HasNoValue.Should().BeTrue();
         }
 
         [Test]
@@ -120,15 +106,6 @@ namespace UnitTests
             newGameResult.IsFailure.Should().BeTrue();
         }
 
-        [Test]
-        public void WhenCreatingANewGame_ItDoesNotHaveAnyBallsPlayed()
-        {
-            var newGameResult = CreateGameWithoutPlayers();
-            newGameResult.Value.BallsPlayed.Should()
-                .NotBeNull()
-                .And.BeEmpty();
-        }
-
         #endregion
 
         #region Adding Players
@@ -155,18 +132,6 @@ namespace UnitTests
             var result = newGameResult.Value.AddPlayer(null);
 
             result.Should().NotBeNull();
-            result.IsFailure.Should().BeTrue();
-        }
-
-        [Test]
-        public void WhenAddingAPlayer_WhenGameHasStarted_ItFails()
-        {
-            var newPlayer = CreateValidPlayer(withName: "Player 03", withLogin: "login 03");
-            (var newGame, var _, var __) = CreateDefaultGameWithPlayers();
-            newGame.Start();
-
-            var result = newGame.AddPlayer(newPlayer);
-
             result.IsFailure.Should().BeTrue();
         }
 
@@ -235,18 +200,6 @@ namespace UnitTests
         }
 
         [Test]
-        public void WhenEditingPlayer_IfGameIsNotDraft_ItFails()
-        {
-            (var game, var player1, var _) = CreateDefaultGameWithPlayers();
-            game.Start();
-
-            var newPlayerInfo = CreateValidPlayer(withName: "Updated Player", withLogin: "Updated Login");
-            var updatePlayerResult = game.UpdatePlayer(player1, newPlayerInfo);
-
-            updatePlayerResult.IsFailure.Should().BeTrue();
-        }
-
-        [Test]
         public void WhenEditingPlayer_IfPlayerToUpdateDoesNotExist_ItFails()
         {
             (var game, var _, var __) = CreateDefaultGameWithPlayers();
@@ -283,17 +236,6 @@ namespace UnitTests
 
             result.IsSuccess.Should().BeTrue();
             game.Players.Should().NotContain(player1);
-        }
-
-        [Test]
-        public void WhenRemovingValidPlayer_IfGameIsNotInDraftMode_ItFails()
-        {
-            (var game, var player1, var _) = this.CreateDefaultGameWithPlayers();
-            var _ = game.Start();
-
-            var result = game.RemovePlayer(player1);
-
-            result.IsFailure.Should().BeTrue();
         }
 
         [Test]
@@ -427,16 +369,6 @@ namespace UnitTests
         }
 
         [Test]
-        public void WhenAddingBoardToPlayer_IfGameHasStarted_ItFails()
-        {
-            (var newGame, var player1, var _) = CreateDefaultGameWithPlayers();
-            newGame.Start();
-            
-            var addBoardResult = newGame.AddBoardToPlayer(this._randomizer, player1);
-            addBoardResult.IsFailure.Should().BeTrue();
-        }
-
-        [Test]
         public void WhenAddingBoardToNonExistingPlayer_ItFails()
         {
             var newGameResult = CreateGameWithoutPlayers();
@@ -464,18 +396,6 @@ namespace UnitTests
             result.IsSuccess.Should().BeTrue();
             player1.Boards.Should().HaveCount(playerBoardsCount - 1);
             player1.Boards.Should().NotContain(boardToRemove);
-        }
-
-        [Test]
-        public void WhenRemovingBoardFromPlayer_IfGameIsNotInDraftState_ItFails()
-        {
-            (var game, var player1, var _) = CreateDefaultGameWithPlayers();
-            var boardToRemove = player1.Boards.First();
-
-            var _ = game.Start();
-            var result = game.RemoveBoardFromPlayer(player1, boardToRemove);
-
-            result.IsFailure.Should().BeTrue();
         }
 
         [Test]
@@ -508,19 +428,24 @@ namespace UnitTests
         [Test]
         public void WhenGameIsInRightState_StartingGame_Works()
         {
-            (var newGame, var _, var __) = CreateDefaultGameWithPlayers();
+            (var draftGame, var _, var __) = CreateDefaultGameWithPlayers();
 
-            var startGameResult = newGame.Start();
+            var startGameResult = draftGame.Start();
 
             startGameResult.IsSuccess.Should().BeTrue();
+            startGameResult.Value.Name.Should().Be(draftGame.Name);
+            startGameResult.Value.GameType.Should().Be(draftGame.GameType);
+            startGameResult.Value.BallsConfigured.Should().HaveCount(draftGame.BallsConfigured.Count);
+            startGameResult.Value.BallsPlayed.Should().BeEmpty();
+            startGameResult.Value.Players.Should().HaveCount(draftGame.Players.Count);
         }
 
         [Test]
         public void WhenGamePlayersDontHaveBoardsAdded_StartingGame_Fails()
         {
-            (var newGame, var _, var __) = CreateDefaultGameWithPlayers(false);
+            (var draftGame, var _, var __) = CreateDefaultGameWithPlayers(false);
 
-            var startGameResult = newGame.Start();
+            var startGameResult = draftGame.Start();
 
             startGameResult.IsFailure.Should().BeTrue();
         }
@@ -532,11 +457,11 @@ namespace UnitTests
         [Test]
         public void WhenPlayingBalls_IfInvalidBallProvided_ItFails()
         {
-            (var newGame, var _, var __) = CreateDefaultGameWithPlayers();
-            newGame.Start();
+            (var draftGame, var _, var __) = CreateDefaultGameWithPlayers();
+            var activeGameResult = draftGame.Start();
 
             var ballToPlay = Ball.Create(BallLeter.B, 120).Value;
-            var playBallResult = newGame.PlayBall(ballToPlay);
+            var playBallResult = activeGameResult.Value.PlayBall(ballToPlay);
 
             playBallResult.IsFailure.Should().BeTrue();
         }
@@ -544,23 +469,12 @@ namespace UnitTests
         [Test]
         public void WhenPlayingBalls_IfBallHasBeenPlayedAlready_ItFails()
         {
-            (var newGame, var _, var __) = CreateDefaultGameWithPlayers();
-            newGame.Start();
+            (var draftGame, var _, var __) = CreateDefaultGameWithPlayers();
+            var activeGameResult = draftGame.Start();
 
             var ballToPlay = Ball.Create(BallLeter.B, 2).Value;
-            newGame.PlayBall(ballToPlay);
-            var playBallResult = newGame.PlayBall(ballToPlay);
-
-            playBallResult.IsFailure.Should().BeTrue();
-        }
-
-        [Test]
-        public void WhenPlayingBalls_IfGameHasNotStartedYet_ItFails()
-        {
-            var newGameResult = CreateGameWithoutPlayers();
-            var ballToPlay = Ball.Create(BallLeter.B, 5).Value;
-
-            var playBallResult = newGameResult.Value.PlayBall(ballToPlay);
+            activeGameResult.Value.PlayBall(ballToPlay);
+            var playBallResult = activeGameResult.Value.PlayBall(ballToPlay);
 
             playBallResult.IsFailure.Should().BeTrue();
         }
@@ -568,11 +482,11 @@ namespace UnitTests
         [Test]
         public void WhenPlayingBalls_IfProvidingInvalidBall_ItFails()
         {
-            var newGameResult = CreateGameWithoutPlayers();
+            (var draftGame, var _, var __) = CreateDefaultGameWithPlayers();
             var ballToPlay = Ball.Create(BallLeter.I, 5).Value;
 
-            newGameResult.Value.Start();
-            var playBallResult = newGameResult.Value.PlayBall(ballToPlay);
+            var activeGame = draftGame.Start().Value;
+            var playBallResult = activeGame.PlayBall(ballToPlay);
 
             playBallResult.IsFailure.Should().BeTrue();
         }
@@ -580,12 +494,12 @@ namespace UnitTests
         [Test]
         public void WhenPlayingBalls_IfProvidingBallAlreadyPlayed_ItFails()
         {
-            var newGameResult = CreateGameWithoutPlayers();
+            (var draftGame, var _, var __) = CreateDefaultGameWithPlayers();
             var ballToPlay = Ball.Create(BallLeter.B, 5).Value;
 
-            newGameResult.Value.Start();
-            var playBallResult = newGameResult.Value.PlayBall(ballToPlay);
-            playBallResult = newGameResult.Value.PlayBall(ballToPlay);
+            var activeGame = draftGame.Start().Value;
+            var playBallResult = activeGame.PlayBall(ballToPlay);
+            playBallResult = activeGame.PlayBall(ballToPlay);
 
             playBallResult.IsFailure.Should().BeTrue();
         }
@@ -593,17 +507,17 @@ namespace UnitTests
         [Test]
         public void WhenPlayingBalls_IfProvidingValidBall_ItWorks()
         {
-            (var newGame, var _, var __) = CreateDefaultGameWithPlayers();
+            (var draftGame, var _, var __) = CreateDefaultGameWithPlayers();
             var ballToPlay = Ball.Create(BallLeter.B, 5).Value;
             
-            newGame.Start();
-            var playBallResult = newGame.PlayBall(ballToPlay);
+            var activeGameResult = draftGame.Start();
+            var playBallResult = activeGameResult.Value.PlayBall(ballToPlay);
 
             playBallResult.IsSuccess.Should().BeTrue();
-            newGame.BallsPlayed.Should().NotBeEmpty()
+            activeGameResult.Value.BallsPlayed.Should().NotBeEmpty()
                 .And.Contain(ballToPlay);
             
-            foreach(var player in newGame.Players)
+            foreach(var player in activeGameResult.Value.Players)
             {
                 foreach(var board in player.Boards)
                 {
@@ -624,19 +538,19 @@ namespace UnitTests
         [Test]
         public void WhenRandomlyPlayingBall_ItWorks()
         {
-            (var newGame, var _, var __) = CreateDefaultGameWithPlayers();
-            newGame.Start();
+            (var draftGame, var _, var __) = CreateDefaultGameWithPlayers();
+            var activeGameResult = draftGame.Start();
             var randomizer = new Random();
 
             do
             {
-                var randomPlayBallResult = newGame.RadmonlyPlayBall(randomizer);
+                var randomPlayBallResult = activeGameResult.Value.RadmonlyPlayBall(randomizer);
                 randomPlayBallResult.IsSuccess.Should().BeTrue();
 
-                newGame.BallsConfigured.Should().Contain(randomPlayBallResult.Value);
-                newGame.BallsPlayed.Should().Contain(randomPlayBallResult.Value);
+                activeGameResult.Value.BallsConfigured.Should().Contain(randomPlayBallResult.Value);
+                activeGameResult.Value.BallsPlayed.Should().Contain(randomPlayBallResult.Value);
 
-                var winnersResult = newGame.GetPotentialWinners();
+                var winnersResult = activeGameResult.Value.GetPotentialWinners();
                 winnersResult.IsSuccess.Should().BeTrue();
                 if (winnersResult.Value.Any())
                     break;
@@ -651,97 +565,81 @@ namespace UnitTests
         [Test]
         public void SettingTheRightWinner_Works()
         {
-            (var newGame, var chosenPlayerSetToWin, var _, var __) = SetWinnerPlayerForGame();
+            (var activeGame, var chosenPlayerSetToWin, var _, var __) = SetWinnerPlayerForGame();
 
-            var result = newGame.SetWinner(chosenPlayerSetToWin);
+            var finishedGameResult = activeGame.SetWinner(chosenPlayerSetToWin);
 
-            result.IsSuccess.Should().BeTrue();
-            newGame.Winner.HasValue.Should().BeTrue();
-            newGame.Winner.Value.Should().Be(chosenPlayerSetToWin);
-            newGame.State.Should().Be(GameState.Finished);
+            finishedGameResult.IsSuccess.Should().BeTrue();
+            finishedGameResult.Value.Winner.Should().Be(chosenPlayerSetToWin);
         }
 
         [Test]
         public void WhenSettingTheWinner_IfProvindingWrongWinner_ItFails()
         {
-            (var newGame, var _, var __, var otherPlayer) = SetWinnerPlayerForGame();
+            (var activeGame, var _, var __, var otherPlayer) = SetWinnerPlayerForGame();
 
-            var result = newGame.SetWinner(otherPlayer);
+            var finishedGameResult = activeGame.SetWinner(otherPlayer);
 
-            result.IsFailure.Should().BeTrue();
-            newGame.Winner.HasNoValue.Should().BeTrue();
+            finishedGameResult.IsFailure.Should().BeTrue();
         }
 
         [Test]
         public void WhenSettingTheWinner_IfProvindingNullWinner_ItFails()
         {
-            (var newGame, var _, var __, var ___) = SetWinnerPlayerForGame();
+            (var activeGame, var _, var __, var ___) = SetWinnerPlayerForGame();
 
-            var result = newGame.SetWinner(null);
+            var finishedGameResult = activeGame.SetWinner(null);
 
-            result.IsFailure.Should().BeTrue();
-            newGame.Winner.HasNoValue.Should().BeTrue();
+            finishedGameResult.IsFailure.Should().BeTrue();
         }
 
         [Test]
         public void WhenSettingTheWinner_IfProvindingNonExistingPlayer_ItFails()
         {
-            (var newGame, var _, var __, var ___) = SetWinnerPlayerForGame();
+            (var activeGame, var _, var __, var ___) = SetWinnerPlayerForGame();
 
-            var result = newGame.SetWinner(CreateValidPlayer(withName: "Another name", withLogin: "login 4"));
+            var finishedGameResult = activeGame.SetWinner(CreateValidPlayer(withName: "Another name", withLogin: "login 4"));
 
-            result.IsFailure.Should().BeTrue();
-            newGame.Winner.HasNoValue.Should().BeTrue();
-        }
-
-        [Test]
-        public void WhenSettingTheWinner_IfGameHasNotStartedYet_ItFails()
-        {
-            (var newGame, var chosenPlayerSetToWin, var otherPlayer) = CreateDefaultGameWithPlayers();
-            
-            var result = newGame.SetWinner(chosenPlayerSetToWin);
-
-            result.IsFailure.Should().BeTrue();
-            newGame.Winner.HasNoValue.Should().BeTrue();
+            finishedGameResult.IsFailure.Should().BeTrue();
         }
 
         #endregion
 
         #region Helpers
 
-        private Result<Game> CreateGameWithoutPlayers(string withName = "Name 01", short withTotalBallsCount = 75, 
+        private Result<DraftGame> CreateGameWithoutPlayers(string withName = "Name 01", short withTotalBallsCount = 75, 
             short withMaxNBallsPerBucket = 5, GameType withGameType = GameType.STANDARD) =>
-            Game.Create(withName, withGameType, withTotalBallsCount, withMaxNBallsPerBucket);
+            DraftGame.Create(withName, withGameType, withTotalBallsCount, withMaxNBallsPerBucket);
 
-        private (Game game, Player player1, Player player2) CreateDefaultGameWithPlayers(bool shouldBoardsBeAdded = true)
+        private (DraftGame game, Player player1, Player player2) CreateDefaultGameWithPlayers(bool shouldBoardsBeAdded = true)
         {
-            var newGame = CreateGameWithoutPlayers().Value;
+            var draftGame = CreateGameWithoutPlayers().Value;
             var player1 = CreateValidPlayer(withName: "Player 01", withLogin: "login 01");
             var player2 = CreateValidPlayer(withName: "Player 02", withLogin: "login 02");
 
-            newGame.AddPlayer(player1);
-            newGame.AddPlayer(player2);
+            draftGame.AddPlayer(player1);
+            draftGame.AddPlayer(player2);
 
             if(shouldBoardsBeAdded)
             {
-                newGame.AddBoardToPlayer(this._randomizer, player1);
-                newGame.AddBoardToPlayer(this._randomizer, player1);
-                newGame.AddBoardToPlayer(this._randomizer, player2);
+                draftGame.AddBoardToPlayer(this._randomizer, player1);
+                draftGame.AddBoardToPlayer(this._randomizer, player1);
+                draftGame.AddBoardToPlayer(this._randomizer, player2);
             }
 
-            return (newGame, player1, player2);
+            return (draftGame, player1, player2);
         }
 
-        private (Game game, Player winner, Board winningBoard, Player looser) SetWinnerPlayerForGame()
+        private (ActiveGame game, Player winner, Board winningBoard, Player looser) SetWinnerPlayerForGame()
         {
-            (var newGame, var chosenPlayerSetToWin, var otherPlayer) = CreateDefaultGameWithPlayers();
-            newGame.Start();
+            (var draftGame, var chosenPlayerSetToWin, var otherPlayer) = CreateDefaultGameWithPlayers();
+            var activeGameResult = draftGame.Start();
             var chosenBoardSetToWin = chosenPlayerSetToWin.Boards.First();
 
             foreach (var ball in chosenBoardSetToWin.BallsConfigured)
-                newGame.PlayBall(ball);
+                activeGameResult.Value.PlayBall(ball);
 
-            return (newGame, chosenPlayerSetToWin, chosenBoardSetToWin, otherPlayer);
+            return (activeGameResult.Value, chosenPlayerSetToWin, chosenBoardSetToWin, otherPlayer);
         }
 
         private Player CreateValidPlayer(string withName = "Player 01", 
