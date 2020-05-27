@@ -5,17 +5,17 @@ using System.Collections.Generic;
 
 using WebUI.Services;
 using WebUI.Models.GamePlayer;
+using WebUI.Infrastructure.DTOs;
 
 using Blazored.Toast.Services;
 
-using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Components;
-using WebUI.Infrastructure.DTOs;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
 
 namespace WebUI.ViewModels
 {
-    public class GamePlayerViewModel
+    public class GamePlayerViewModel: IDisposable
     {
         public enum State
         {
@@ -110,6 +110,9 @@ namespace WebUI.ViewModels
 
         private async Task StartBingoHubConnection(string jwtPlayerToken)
         {
+            if (this._bingoHubConnection != null)
+                await this.DisconnectFromServer();
+
             var specificWebRootFolder = this._configuration["Bingo.Security:SpecificWebRootFolder"];
             var serverURI = this._navigationManager.ToAbsoluteUri($"{specificWebRootFolder}/bingoHub");
             this._bingoHubConnection = new HubConnectionBuilder()
@@ -144,16 +147,28 @@ namespace WebUI.ViewModels
             this._triggerUIRefresh?.Invoke();
         }
 
-        private void SetWinnerMessageHandler(string winnerName)
+        private async Task SetWinnerMessageHandler(string winnerName)
         {
-            if(this.PlayerModel != null && this.PlayerModel.Name == winnerName)
-            {
+            var isItMeTheWinner = this.PlayerModel != null && this.PlayerModel.Name == winnerName;
+            if (isItMeTheWinner)
                 this._toastService.ShowSuccess($"Tú has ganado el juego. FELICITACIONES !!", "Eres el Ganador");
-            }
             else
-            {
                 this._toastService.ShowSuccess($"El jugador {winnerName} ha ganado el juego !!");
-            }
+
+            await this.DisconnectFromServer();
+        }
+
+        public void Dispose()
+        {
+            Task.Run(() => this.DisconnectFromServer());
+        }
+
+        private async Task DisconnectFromServer()
+        {
+            if (this._bingoHubConnection == null || this._bingoHubConnection.State == HubConnectionState.Disconnected)
+                return;
+
+            await this._bingoHubConnection.StopAsync();
         }
     }
 }

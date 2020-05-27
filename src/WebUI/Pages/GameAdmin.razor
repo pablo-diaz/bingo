@@ -9,17 +9,18 @@
 
 @if (admon.CanAuthenticatingAdminSectionBeShown)
 {
-    <h1>Por favor, autentícate como Administrador del Juego</h1>
+    <h3>Por favor, autentícate como Administrador del Juego</h3>
     <EditForm Model=admon.AdminLoginModel OnValidSubmit=@(async () => await admon.AuthenticateAdmin())>
         <DataAnnotationsValidator />
         <div class="form-row">
             <div class="col">
                 <label for=@admon.AdminLoginModel.Passwd>Contraseña</label>
-                <InputText type="password" class="form-control" placeholder="Escribe la Contraseña que te asignaron en este juego" @bind-Value=admon.AdminLoginModel.Passwd />
+                <InputText type="password" class="form-control" placeholder="Escribe la Contraseña del Administrador del Juego" @bind-Value=admon.AdminLoginModel.Passwd />
                 <ValidationMessage For="@(() => admon.AdminLoginModel.Passwd)" />
             </div>
         </div>
-        <button type="submit" class="btn btn-primary">Ingresar al juego</button>
+        <br /><br />
+        <button type="submit" class="btn btn-primary">Ingresar como Administrador al Juego</button>
     </EditForm>
 }
 

@@ -23,7 +23,7 @@
 
 @if (player.CanAuthenticateInGameSectionBeShown)
 {
-    <h1>Ahora por favor, cuéntanos quién eres tú, dentro del juego "@player.GameSelected.Name"</h1>
+    <h3>Ahora por favor, cuéntanos quién eres tú, dentro del juego "@player.GameSelected.Name"</h3>
     <EditForm Model=player.LoginModel OnValidSubmit=@(async () => await player.Login())>
         <DataAnnotationsValidator />
         <div class="form-row">
@@ -40,8 +40,17 @@
                 <ValidationMessage For="@(() => player.LoginModel.Passwd)" />
             </div>
         </div>
-        <button type="reset" class="btn btn-secondary" @onclick=player.CancelLogin>Regresar a la selección de juegos</button>
-        <button type="submit" class="btn btn-primary">Ingresar al juego</button>
+        <br /><br />
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    <button type="reset" class="btn btn-outline-danger" @onclick=player.CancelLogin>Regresar a la selección de juegos</button>
+                </div>
+                <div class="col">
+                    <button type="submit" class="btn btn-primary">Ingresar al juego</button>
+                </div>
+            </div>
+        </div>
     </EditForm>
 }
 
