@@ -71,7 +71,7 @@ namespace Core
 
         public Result<Ball> RadmonlyPlayBall(Random randomizer)
         {
-            var randomBallResult = GetRandomBall(randomizer);
+            var randomBallResult = GetRandomBallPendingToBePlayed(randomizer);
             if (randomBallResult.IsFailure)
                 return randomBallResult;
 
@@ -96,7 +96,7 @@ namespace Core
 
         #region Helpers
 
-        private Result<Ball> GetRandomBall(Random randomizer)
+        private Result<Ball> GetRandomBallPendingToBePlayed(Random randomizer)
         {
             if (randomizer == null)
                 return Result.Failure<Ball>("Randomizer cannot be null");
@@ -105,7 +105,7 @@ namespace Core
             if(pendingBallsToBePlayed.Count == 0)
                 return Result.Failure<Ball>("There are no more pending balls to be played");
 
-            var randomIndex = randomizer.Next(0, pendingBallsToBePlayed.Count - 1);
+            var randomIndex = randomizer.Next(0, pendingBallsToBePlayed.Count);
             return Result.Ok(pendingBallsToBePlayed[randomIndex]);
         }
 

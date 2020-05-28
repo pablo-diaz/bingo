@@ -114,7 +114,7 @@ namespace Core
             if (randomizedList.Count() == expectedCount)
                 return randomizedList;
 
-            var randomIndex = randomGenerator.Next(0, balls.Count - 1);
+            var randomIndex = randomGenerator.Next(0, balls.Count);
             var randomBall = balls[randomIndex];
             balls.RemoveAt(randomIndex);
             randomizedList.Add(randomBall);
@@ -220,7 +220,7 @@ namespace Core
             if (from.Count == desiredCount)
                 return from;
 
-            var randomIndex = randomizer.Next(0, from.Count - 1);
+            var randomIndex = randomizer.Next(0, from.Count);
             from.RemoveAt(randomIndex);
             return from.RandomlyRemoveBallsUntilDesiredCount(randomizer, desiredCount);
         }
