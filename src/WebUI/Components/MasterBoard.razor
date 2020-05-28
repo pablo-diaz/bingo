@@ -5,13 +5,14 @@
             disabled=@IsThereAWinnerAlready
             @onclick=@(() => OnPlayRandomBallClick?.Invoke())>Jugar aleatoriamente</button>
     <br /><br />
-    <div>
-        <h2>Bolas jugadas (en el orden en que fueron jugadas)</h2>
-        <div style="width: 400px; overflow-x: auto; white-space: nowrap;">
-        @foreach (var ball in PlayedBalls)
-        {
-            <button disabled class="btn btn-outline-info">@ball.Entity.Name</button>
-        }
+    <div class="bingo-balls-played"
+         style="display: @(this._ballsPlayedInReverseOrder.Count > 0 ? "block" : "none")">
+        <h4>Bolas jugadas (en el orden en que fueron jugadas)</h4>
+        <div style="width: 70vw; overflow-x: auto; white-space: nowrap;">
+            @foreach (var ball in this._ballsPlayedInReverseOrder)
+            {
+                <button disabled class="btn btn-outline-info">@ball.Entity.Name</button>
+            }
         </div>
     </div>
     <br />
@@ -34,6 +35,8 @@
 </div>
 
 @code {
+    private List<BallModel> _ballsPlayedInReverseOrder;
+
     [Parameter]
     public bool CanItBeShown { get; set; }
 
@@ -51,4 +54,10 @@
 
     [Parameter]
     public bool IsThereAWinnerAlready { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        this._ballsPlayedInReverseOrder = new List<BallModel>(PlayedBalls);
+        this._ballsPlayedInReverseOrder.Reverse();
+    }
 }
