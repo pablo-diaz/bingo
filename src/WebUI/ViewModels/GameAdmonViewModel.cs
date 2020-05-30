@@ -336,6 +336,20 @@ namespace WebUI.ViewModels
             await this.TransitionToEditGame(GameModel.FromEntity(setWinnerResult.Value));
         }
 
+        public void DeleteGame(GameModel game)
+        {
+            var deleteGameResult = this._gamingComunication.DeleteGame(game.Name);
+            if (deleteGameResult.IsFailure)
+            {
+                this._toastService.ShowError(deleteGameResult.Error);
+                return;
+            }
+
+            this._toastService.ShowSuccess($"El juego se ha eliminado exitosamente");
+
+            TransitionToBrowsing();
+        }
+
         public Task AddTestGames()
         {
             var gameTypes = new GameType[] { GameType.L, GameType.O, GameType.STANDARD, GameType.T, GameType.X };

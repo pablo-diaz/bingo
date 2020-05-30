@@ -35,6 +35,7 @@
                 <th>Jugadores</th>
                 <th>Tipo</th>
                 <th>Estado</th>
+                <th>&nbsp;</th>
             </tr>
         </thead>
         <tbody>
@@ -45,6 +46,7 @@
                     <td>@game.PlayerCount</td>
                     <td>@game.GameType</td>
                     <td>@game.State</td>
+                    <td><button class="btn btn-danger" @onclick=@(() => { admon.DeleteGame(game); UpdateUI(); })>Borrar</button></td>
                 </tr>
             }
         </tbody>

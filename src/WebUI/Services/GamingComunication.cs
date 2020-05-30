@@ -287,5 +287,18 @@ namespace WebUI.Services
                 .OrderBy(game => game.Name)
                 .ToList()
                 .AsReadOnly();
+
+        public Result DeleteGame(string gameName)
+        {
+            gameName = gameName.Trim();
+
+            var gameIndexFound = this._games.FindIndex(g => g.Name == gameName);
+            if (gameIndexFound <= -1)
+                return Result.Failure<GameDTO>("Game has not been found by its name");
+
+            this._games.RemoveAt(gameIndexFound);
+
+            return Result.Ok();
+        }
     }
 }
