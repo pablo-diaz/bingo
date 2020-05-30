@@ -53,55 +53,55 @@
 
 @if (admon.CanNewGameSectionBeShown)
 {
-    <EditForm Model=admon.GameModel OnValidSubmit=admon.CreateNewGame>
+    <EditForm Model=admon.CurrentGame OnValidSubmit=admon.CreateNewGame>
         <DataAnnotationsValidator />
         <div class="form-row">
             <div class="col">
-                <label for=@admon.GameModel.Name>Nombre del Juego</label>
-                <InputText type="text" class="form-control" placeholder="Escriba un nombre del juego" @bind-Value=admon.GameModel.Name />
-                <ValidationMessage For="@(() => admon.GameModel.Name)" />
+                <label for=@admon.CurrentGame.Name>Nombre del Juego</label>
+                <InputText type="text" class="form-control" placeholder="Escriba un nombre del juego" @bind-Value=admon.CurrentGame.Name />
+                <ValidationMessage For="@(() => admon.CurrentGame.Name)" />
             </div>
         </div>
         <div class="form-row">
             <div class="col">
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="playerSecurityRadios" id="playerSecurityRadiosYes" value="yes"
-                           @onchange=@(() => admon.GameModel.WithPlayerSecurity = true)>
+                           @onchange=@(() => admon.CurrentGame.WithPlayerSecurity = true)>
                     <label class="form-check-label" for="playerSecurityRadiosYes">Jugadores deben escribir contraseña</label>
                 </div>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="playerSecurityRadios" id="playerSecurityRadiosNo" value="no"
-                           @onchange=@(() => admon.GameModel.WithPlayerSecurity = false)>
+                           @onchange=@(() => admon.CurrentGame.WithPlayerSecurity = false)>
                     <label class="form-check-label" for="playerSecurityRadiosNo">Jugadores no escibirán contraseña</label>
                 </div>
-                <ValidationMessage For="@(() => admon.GameModel.WithPlayerSecurity)" />
+                <ValidationMessage For="@(() => admon.CurrentGame.WithPlayerSecurity)" />
             </div>
         </div>
         <div class="form-row">
             <div class="col">
-                <label for=@admon.GameModel.GameType>Selecciona el tipo de juego</label>
+                <label for=@admon.CurrentGame.GameType>Selecciona el tipo de juego</label>
                 <ul class="list-group">
-                    <li class="list-group-item @(admon.GameModel.GameType == Core.GameType.STANDARD ? "active" : "")"
-                        @onclick=@(() => admon.GameModel.GameType = Core.GameType.STANDARD)
+                    <li class="list-group-item @(admon.CurrentGame.GameType == Core.GameType.STANDARD ? "active" : "")"
+                        @onclick=@(() => admon.CurrentGame.GameType = Core.GameType.STANDARD)
                         style="cursor: pointer">Estándar</li>
 
-                    <li class="list-group-item @(admon.GameModel.GameType == Core.GameType.O ? "active" : "")"
-                        @onclick=@(() => admon.GameModel.GameType = Core.GameType.O)
+                    <li class="list-group-item @(admon.CurrentGame.GameType == Core.GameType.O ? "active" : "")"
+                        @onclick=@(() => admon.CurrentGame.GameType = Core.GameType.O)
                         style="cursor: pointer">Tipo O</li>
 
-                    <li class="list-group-item @(admon.GameModel.GameType == Core.GameType.X ? "active" : "")"
-                        @onclick=@(() => admon.GameModel.GameType = Core.GameType.X)
+                    <li class="list-group-item @(admon.CurrentGame.GameType == Core.GameType.X ? "active" : "")"
+                        @onclick=@(() => admon.CurrentGame.GameType = Core.GameType.X)
                         style="cursor: pointer">Tipo X</li>
 
-                    <li class="list-group-item @(admon.GameModel.GameType == Core.GameType.T ? "active" : "")"
-                        @onclick=@(() => admon.GameModel.GameType = Core.GameType.T)
+                    <li class="list-group-item @(admon.CurrentGame.GameType == Core.GameType.T ? "active" : "")"
+                        @onclick=@(() => admon.CurrentGame.GameType = Core.GameType.T)
                         style="cursor: pointer">Tipo T</li>
 
-                    <li class="list-group-item @(admon.GameModel.GameType == Core.GameType.L ? "active" : "")"
-                        @onclick=@(() => admon.GameModel.GameType = Core.GameType.L)
+                    <li class="list-group-item @(admon.CurrentGame.GameType == Core.GameType.L ? "active" : "")"
+                        @onclick=@(() => admon.CurrentGame.GameType = Core.GameType.L)
                         style="cursor: pointer">Tipo L</li>
                 </ul>
-                <ValidationMessage For="@(() => admon.GameModel.GameType)" />
+                <ValidationMessage For="@(() => admon.CurrentGame.GameType)" />
             </div>
         </div>
         <button type="reset" class="btn btn-secondary" @onclick=admon.CancelCreatingNewGame>Cancelar</button>
@@ -111,14 +111,15 @@
 
 @if (admon.CanEditGameSectionBeShown)
 {
-    <h2>Juego: @admon.GameModel.Name <span class="badge badge-info">Tipo @admon.GameModel.GameType - @admon.GameModel.State</span></h2>
+    <h2>Juego: @admon.CurrentGame.Name <span class="badge badge-info">Tipo @admon.CurrentGame.GameType - @admon.CurrentGame.State</span></h2>
     <button class="btn btn-outline-info" @onclick=admon.TransitionToBrowsing>Regresar a listado de juegos</button>
-    <button class="btn btn-primary" @onclick=admon.TransitionToNewPlayer style=@(admon.GameModel.IsItADraftGame ? "" : "display: none;")>Crear nuevo jugador</button>
-    <button class="btn btn-warning" @onclick=admon.AddTestPlayers style=@(admon.GameModel.IsItADraftGame && admon.IsItInDevMode ? "" : "display: none;")>Agregar jugadores de prueba</button>
-    <button class="btn btn-success float-right" @onclick=admon.StartGame style=@(admon.GameModel.IsItADraftGame ? "" : "display: none;")>Iniciar juego</button>
+    <button class="btn btn-primary" @onclick=admon.TransitionToNewPlayer style=@(admon.CurrentGame.IsItADraftGame ? "" : "display: none;")>Crear nuevo jugador</button>
+    <button class="btn btn-info" @onclick=admon.TransitionToCopyPlayersFromOtherGame style=@(admon.CurrentGame.IsItADraftGame && admon.IsItInDevMode ? "" : "display: none;")>Copiar jugadores desde otro Juego</button>
+    <button class="btn btn-warning" @onclick=admon.AddTestPlayers style=@(admon.CurrentGame.IsItADraftGame && admon.IsItInDevMode ? "" : "display: none;")>Agregar jugadores de prueba</button>
+    <button class="btn btn-success float-right" @onclick=admon.StartGame style=@(admon.CurrentGame.IsItADraftGame ? "" : "display: none;")>Iniciar juego</button>
 
-    <Players List=@admon.GameModel.Players
-             AllowModifyingBoards=@admon.GameModel.IsItADraftGame
+    <Players List=@admon.CurrentGame.Players
+             AllowModifyingBoards=@admon.CurrentGame.IsItADraftGame
              OnEditingInfo=@(player => { admon.TransitionToEditPlayerInfo(player); UpdateUI(); })
              OnAddingBoard=@(player => { admon.AddBoardToPlayer(player); UpdateUI(); })
              OnRemovingBoard=@(player => { admon.RemoveBoardFromPlayer(player); UpdateUI(); })
@@ -126,12 +127,30 @@
              OnRemovingPlayer=@(player => { admon.RemovePlayer(player); UpdateUI(); })
              IsThereAWinnerAlready=@admon.IsThereAWinnerAlready />
 
-    <MasterBoard CanItBeShown=@(!admon.GameModel.IsItADraftGame)
-                 State=@admon.GameModel.MasterBoard
+    <MasterBoard CanItBeShown=@(!admon.CurrentGame.IsItADraftGame)
+                 State=@admon.CurrentGame.MasterBoard
                  OnBallClick=@(async ball => { await admon.PlayBall(ball); UpdateUI(); })
                  OnPlayRandomBallClick=@(async () => { await admon.PlayBallRandomly(); UpdateUI(); })
-                 PlayedBalls=@admon.GameModel.BallsPlayed
+                 PlayedBalls=@admon.CurrentGame.BallsPlayed
                  IsThereAWinnerAlready=@admon.IsThereAWinnerAlready />
+}
+
+@if (admon.CanCopyPlayersFromOtherGameSectionBeShown)
+{
+    <h3>Ahora vamos a copiar jugadores desde otro juego. Por favor selecciona el juego origen desde el cual deseas copiar sus jugadores</h3>
+    <br />
+    <button class="btn btn-danger" @onclick=admon.CancelCopyPlayersFromGame>Cancelar y Regresar a la edición del juego</button>
+    <br /><br /><br />
+    <div class="container-fluid">
+        <div class="row">
+            @foreach (var game in admon.OtherGames)
+            {
+                <div class="col">
+                    <button class="btn btn-outline-primary" @onclick=@(() => admon.CopyPlayersFromGame(game))>@game.Name</button>
+                </div>
+            }
+        </div>
+    </div>
 }
 
 @if (admon.CanNewPlayerSectionBeShown || admon.CanEditPlayerSectionBeShown)

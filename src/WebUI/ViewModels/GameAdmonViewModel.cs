@@ -25,7 +25,8 @@ namespace WebUI.ViewModels
             CREATING_GAME,
             EDITING_GAME,
             CREATING_PLAYER,
-            EDITING_PLAYER
+            EDITING_PLAYER,
+            COPYING_PLAYERS_FROM_OTHER_GAME
         }
 
         private readonly IToastService _toastService;
@@ -34,8 +35,13 @@ namespace WebUI.ViewModels
         private State _currentState;
 
         public AdminLoginModel AdminLoginModel { get; set; }
-        public GameModel GameModel { get; set; }
+        public GameModel CurrentGame { get; set; }
         public PlayerModel PlayerModel { get; set; }
+        public List<GameModel> OtherGames =>
+            this._gamingComunication.GetAllGames()
+                .Where(game => game.Name != this.CurrentGame.Name)
+                .Select(game => GameModel.FromEntity(game))
+                .ToList();
 
         public List<GameModel> Games => this._gamingComunication.GetAllGames()
             .Select(game => GameModel.FromEntity(game))
@@ -47,9 +53,10 @@ namespace WebUI.ViewModels
         public bool CanEditGameSectionBeShown => this._currentState == State.EDITING_GAME;
         public bool CanNewPlayerSectionBeShown => this._currentState == State.CREATING_PLAYER;
         public bool CanEditPlayerSectionBeShown => this._currentState == State.EDITING_PLAYER;
+        public bool CanCopyPlayersFromOtherGameSectionBeShown => this._currentState == State.COPYING_PLAYERS_FROM_OTHER_GAME;
         public bool IsItInDevMode => Convert.ToBoolean(this._configuration["Bingo.Security:DevMode"]);
 
-        public bool IsThereAWinnerAlready => this.GameModel.GameEntity.Winner.HasValue;
+        public bool IsThereAWinnerAlready => this.CurrentGame.GameEntity.Winner.HasValue;
 
         public GameAdmonViewModel(IToastService toastService, GamingComunication gamingComunication,
             IConfiguration configuration)
@@ -69,21 +76,21 @@ namespace WebUI.ViewModels
         {
             this._currentState = State.AUTHENTICATING_ADMIN;
             this.AdminLoginModel = new AdminLoginModel();
-            this.GameModel = null;
+            this.CurrentGame = null;
             this.PlayerModel = null;
         }
 
         public void TransitionToBrowsing()
         {
             this._currentState = State.BROWSING;
-            this.GameModel = null;
+            this.CurrentGame = null;
             this.PlayerModel = null;
         }
 
         public Task TransitionToNewGame()
         {
             this._currentState = State.CREATING_GAME;
-            this.GameModel = new GameModel();
+            this.CurrentGame = new GameModel();
             return Task.CompletedTask;
         }
 
@@ -103,14 +110,14 @@ namespace WebUI.ViewModels
 
         public Task CreateNewGame()
         {
-            var addNewGameResult = this._gamingComunication.AddStandardGame(this.GameModel.Name, this.GameModel.GameType.Value);
+            var addNewGameResult = this._gamingComunication.AddStandardGame(this.CurrentGame.Name, this.CurrentGame.GameType.Value);
             if(addNewGameResult.IsFailure)
             {
                 this._toastService.ShowError(addNewGameResult.Error);
                 return Task.CompletedTask;
             }
 
-            this._toastService.ShowSuccess($"El juego '{this.GameModel.Name}' se ha creado exitosamente");
+            this._toastService.ShowSuccess($"El juego '{this.CurrentGame.Name}' se ha creado exitosamente");
 
             this.TransitionToBrowsing();
             return Task.CompletedTask;
@@ -126,8 +133,35 @@ namespace WebUI.ViewModels
         public Task TransitionToEditGame(GameModel game)
         {
             this._currentState = State.EDITING_GAME;
-            this.GameModel = game;
+            this.CurrentGame = game;
             this.PlayerModel = null;
+
+            return Task.CompletedTask;
+        }
+
+        public Task TransitionToCopyPlayersFromOtherGame()
+        {
+            this._currentState = State.COPYING_PLAYERS_FROM_OTHER_GAME;
+            return Task.CompletedTask;
+        }
+
+        public void CopyPlayersFromGame(GameModel sourceGame)
+        {
+            var copyPlayersResult = this._gamingComunication.CopyPlayersFromGame(sourceGame.Name, this.CurrentGame.Name);
+            if (copyPlayersResult.IsFailure)
+            {
+                this._toastService.ShowError(copyPlayersResult.Error);
+                return;
+            }
+
+            this._toastService.ShowSuccess($"Se han copiado los jugadores exitosamente");
+
+            TransitionToEditGame(GameModel.FromEntity(copyPlayersResult.Value));
+        }
+
+        public Task CancelCopyPlayersFromGame()
+        {
+            TransitionToEditGame(this.CurrentGame);
 
             return Task.CompletedTask;
         }
@@ -147,7 +181,7 @@ namespace WebUI.ViewModels
             if(this._currentState == State.CREATING_PLAYER)
             {
                 var newPlayerResult = this._gamingComunication.AddNewPlayerToGame(
-                    this.GameModel.Name, this.PlayerModel.Name);
+                    this.CurrentGame.Name, this.PlayerModel.Name);
                 if(newPlayerResult.IsFailure)
                 {
                     this._toastService.ShowError(newPlayerResult.Error);
@@ -160,7 +194,7 @@ namespace WebUI.ViewModels
             else if(this._currentState == State.EDITING_PLAYER)
             {
                 var updatePlayerResult = this._gamingComunication.UpdatePlayerInfoInGame(
-                    this.GameModel.Name, this.PlayerModel.PlayerEntity, this.PlayerModel.Name);
+                    this.CurrentGame.Name, this.PlayerModel.PlayerEntity, this.PlayerModel.Name);
 
                 if (updatePlayerResult.IsFailure)
                 {
@@ -183,7 +217,7 @@ namespace WebUI.ViewModels
 
         public Task CancelAddingOrEditingPlayerInfo()
         {
-            TransitionToEditGame(this.GameModel);
+            TransitionToEditGame(this.CurrentGame);
 
             return Task.CompletedTask;
         }
@@ -197,7 +231,7 @@ namespace WebUI.ViewModels
 
         public Task AddBoardToPlayer(PlayerModel player)
         {
-            var addBoardToPlayerResult = this._gamingComunication.AddBoardToPlayer(this.GameModel.Name, player.Name);
+            var addBoardToPlayerResult = this._gamingComunication.AddBoardToPlayer(this.CurrentGame.Name, player.Name);
             if(addBoardToPlayerResult.IsFailure)
             {
                 this._toastService.ShowError(addBoardToPlayerResult.Error);
@@ -212,7 +246,7 @@ namespace WebUI.ViewModels
 
         public Task RemoveBoardFromPlayer(PlayerModel player)
         {
-            var removeBoardFromPlayerResult = this._gamingComunication.RemoveBoardFromPlayer(this.GameModel.Name, player.Name);
+            var removeBoardFromPlayerResult = this._gamingComunication.RemoveBoardFromPlayer(this.CurrentGame.Name, player.Name);
             if (removeBoardFromPlayerResult.IsFailure)
             {
                 this._toastService.ShowError(removeBoardFromPlayerResult.Error);
@@ -227,7 +261,7 @@ namespace WebUI.ViewModels
 
         public Task RemovePlayer(PlayerModel player)
         {
-            var removePlayerResult = this._gamingComunication.RemovePlayer(this.GameModel.Name, player.Name);
+            var removePlayerResult = this._gamingComunication.RemovePlayer(this.CurrentGame.Name, player.Name);
             if (removePlayerResult.IsFailure)
             {
                 this._toastService.ShowError(removePlayerResult.Error);
@@ -242,7 +276,7 @@ namespace WebUI.ViewModels
 
         public Task StartGame()
         {
-            var startGameResult = this._gamingComunication.StartGame(this.GameModel.Name);
+            var startGameResult = this._gamingComunication.StartGame(this.CurrentGame.Name);
             if(startGameResult.IsFailure)
             {
                 this._toastService.ShowError(startGameResult.Error);
@@ -257,13 +291,13 @@ namespace WebUI.ViewModels
 
         public async Task PlayBall(BallModel ball)
         {
-            var playBallResult = await this._gamingComunication.PlayBall(this.GameModel.Name, ball.Entity.Name);
+            var playBallResult = await this._gamingComunication.PlayBall(this.CurrentGame.Name, ball.Entity.Name);
             HandleBallPlayedResult(playBallResult);
         }
 
         public async Task PlayBallRandomly()
         {
-            var playBallResult = await this._gamingComunication.RandomlyPlayBall(this.GameModel.Name);
+            var playBallResult = await this._gamingComunication.RandomlyPlayBall(this.CurrentGame.Name);
             HandleBallPlayedResult(playBallResult);
         }
 
@@ -290,7 +324,7 @@ namespace WebUI.ViewModels
 
         public async Task SetWinner(PlayerModel player)
         {
-            var setWinnerResult = await this._gamingComunication.SetWinner(this.GameModel.Name, player.Name);
+            var setWinnerResult = await this._gamingComunication.SetWinner(this.CurrentGame.Name, player.Name);
             if (setWinnerResult.IsFailure)
             {
                 this._toastService.ShowError(setWinnerResult.Error);
@@ -322,7 +356,7 @@ namespace WebUI.ViewModels
                 .ToList()
                 .ForEach(testPlayerNumber => {
                     var newPlayerResult = this._gamingComunication.AddNewPlayerToGame(
-                        this.GameModel.Name, $"Name_{testPlayerNumber}");
+                        this.CurrentGame.Name, $"Name_{testPlayerNumber}");
                     gameInContext = newPlayerResult.Value;
                 });
 

@@ -46,6 +46,33 @@ namespace WebUI.Services
             return Result.Ok();
         }
 
+        public Result<GameDTO> CopyPlayersFromGame(string fromGameName, string toGameName)
+        {
+            fromGameName = fromGameName.Trim();
+            toGameName = toGameName.Trim();
+
+            var sourceGameFound = this._games.FirstOrDefault(g => g.Name == fromGameName);
+            if (sourceGameFound == null)
+                return Result.Failure<GameDTO>("Source Game has not been found by its name");
+
+            var targetGameFound = this._games.FirstOrDefault(g => g.Name == toGameName);
+            if (targetGameFound == null)
+                return Result.Failure<GameDTO>("Target Game has not been found by its name");
+
+            foreach(var sourcePlayer in sourceGameFound.Players.Except(targetGameFound.Players))
+            {
+                var newPlayerResult = Player.Create(sourcePlayer.Name);
+                if (newPlayerResult.IsFailure)
+                    return Result.Failure<GameDTO>(newPlayerResult.Error);
+
+                var addPlayerResult = targetGameFound.AddPlayer(newPlayerResult.Value);
+                if (addPlayerResult.IsFailure)
+                    return Result.Failure<GameDTO>(addPlayerResult.Error);
+            }
+
+            return Result.Ok(targetGameFound);
+        }
+
         public Result<GameDTO> AddNewPlayerToGame(string gameName, string playerName)
         {
             gameName = gameName.Trim();
