@@ -16,7 +16,6 @@ namespace WebUI.Infrastructure
         private const string _jwtIssuer = "localhost";
         private const string _jwtAudience = "localhost";
         private readonly TimeSpan _playerTokenDuration = TimeSpan.FromHours(4);
-        public static readonly string CommonUserPasswd = "1234";
 
         public BingoSecurity(IConfiguration configuration)
         {
