@@ -146,9 +146,8 @@ namespace WebUI.ViewModels
 
             if(this._currentState == State.CREATING_PLAYER)
             {
-                var newPlayerResult = this._gamingComunication.AddNewPlayerToGame(this.GameModel.Name, 
-                    this.PlayerModel.Name, this.PlayerModel.Login, this.PlayerModel.Password);
-
+                var newPlayerResult = this._gamingComunication.AddNewPlayerToGame(
+                    this.GameModel.Name, this.PlayerModel.Name);
                 if(newPlayerResult.IsFailure)
                 {
                     this._toastService.ShowError(newPlayerResult.Error);
@@ -160,9 +159,8 @@ namespace WebUI.ViewModels
             }
             else if(this._currentState == State.EDITING_PLAYER)
             {
-                var updatePlayerResult = this._gamingComunication.UpdatePlayerInfoInGame(this.GameModel.Name,
-                    this.PlayerModel.PlayerEntity, this.PlayerModel.Name, this.PlayerModel.Login, 
-                    this.PlayerModel.Password);
+                var updatePlayerResult = this._gamingComunication.UpdatePlayerInfoInGame(
+                    this.GameModel.Name, this.PlayerModel.PlayerEntity, this.PlayerModel.Name);
 
                 if (updatePlayerResult.IsFailure)
                 {
@@ -323,8 +321,8 @@ namespace WebUI.ViewModels
             Enumerable.Range(1, 7)
                 .ToList()
                 .ForEach(testPlayerNumber => {
-                    var newPlayerResult = this._gamingComunication.AddNewPlayerToGame(this.GameModel.Name,
-                        $"Name_{testPlayerNumber}", $"login_{testPlayerNumber}", $"passwd_{testPlayerNumber}");
+                    var newPlayerResult = this._gamingComunication.AddNewPlayerToGame(
+                        this.GameModel.Name, $"Name_{testPlayerNumber}");
                     gameInContext = newPlayerResult.Value;
                 });
 

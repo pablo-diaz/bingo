@@ -136,22 +136,10 @@ namespace UnitTests
         }
 
         [Test]
-        public void WhenAddingPlayersWithSameLogin_ItFails()
-        {
-            var newPlayer1 = CreateValidPlayer(withName: "Player 01", withLogin: "login 01");
-            var newPlayer2 = CreateValidPlayer(withName: "Player 02", withLogin: "login 01");
-            var newGameResult = CreateGameWithoutPlayers();
-            newGameResult.Value.AddPlayer(newPlayer1);
-            var result = newGameResult.Value.AddPlayer(newPlayer2);
-
-            result.IsFailure.Should().BeTrue();
-        }
-
-        [Test]
         public void WhenAddingPlayersWithSameName_ItFails()
         {
-            var newPlayer1 = CreateValidPlayer(withName: "Player 01", withLogin: "login 01");
-            var newPlayer2 = CreateValidPlayer(withName: "Player 01", withLogin: "login 02");
+            var newPlayer1 = CreateValidPlayer(withName: "Player 01");
+            var newPlayer2 = CreateValidPlayer(withName: "Player 01");
             var newGameResult = CreateGameWithoutPlayers();
             newGameResult.Value.AddPlayer(newPlayer1);
             var result = newGameResult.Value.AddPlayer(newPlayer2);
@@ -162,8 +150,8 @@ namespace UnitTests
         [Test]
         public void WhenAddingPlayersWithDifferentLogins_ItWorks()
         {
-            var newPlayer1 = CreateValidPlayer(withName: "Player 01", withLogin: "login 01");
-            var newPlayer2 = CreateValidPlayer(withName: "Player 02", withLogin: "login 02");
+            var newPlayer1 = CreateValidPlayer(withName: "Player 01");
+            var newPlayer2 = CreateValidPlayer(withName: "Player 02");
             var newGameResult = CreateGameWithoutPlayers();
             newGameResult.Value.AddPlayer(newPlayer1);
             var result = newGameResult.Value.AddPlayer(newPlayer2);
@@ -176,27 +164,18 @@ namespace UnitTests
         #region Editing players
 
         [Test, Sequential]
-        public void WhenEditingPlayer_ItWorks(
-            [Values("NewName",     "NewName", null,       null)] string newName,
-            [Values("NewLogin",    null,      "NewLogin", null)] string newLogin,
-            [Values("NewPassword", null,      null,       "NewPassword")] string newPasswd)
+        public void WhenEditingPlayer_ItWorks()
         {
             (var game, var playerToUpdate, var _) = CreateDefaultGameWithPlayers();
             
-            newName = newName ?? playerToUpdate.Name;
-            newLogin = newLogin ?? playerToUpdate.Security.Login;
-            newPasswd = newPasswd ?? playerToUpdate.Security.Password;
-
-            var newPlayerInfo = CreateValidPlayer(withName: newName, withLogin: newLogin, withPassword: newPasswd);
+            var newPlayerInfo = CreateValidPlayer(withName: "NewName 01");
             var updatePlayerResult = game.UpdatePlayer(playerToUpdate, newPlayerInfo);
 
             updatePlayerResult.IsSuccess.Should().BeTrue();
             game.Players.Should().NotBeEmpty()
                 .And.HaveCount(2)
                 .And.Contain(newPlayerInfo);
-            playerToUpdate.Name.Should().Be(newName);
-            playerToUpdate.Security.Login.Should().Be(newLogin);
-            playerToUpdate.Security.Password.Should().Be(newPasswd);
+            playerToUpdate.Name.Should().Be("NewName 01");
         }
 
         [Test]
@@ -204,7 +183,7 @@ namespace UnitTests
         {
             (var game, var _, var __) = CreateDefaultGameWithPlayers();
             var nonExistingPlayer = CreateValidPlayer(withName: "NonExisting player");
-            var newPlayerInfo = CreateValidPlayer(withName: "Updated Player", withLogin: "Updated Login");
+            var newPlayerInfo = CreateValidPlayer(withName: "Updated Player");
 
             var updatePlayerResult = game.UpdatePlayer(nonExistingPlayer, newPlayerInfo);
 
@@ -215,8 +194,7 @@ namespace UnitTests
         public void WhenEditingPlayer_IfNewPlayerInfoAlreadyExists_ItFails()
         {
             (var game, var playerToBeUpdated, var anotherPlayer) = CreateDefaultGameWithPlayers();
-            var newPlayerInfo = CreateValidPlayer(withName: anotherPlayer.Name, 
-                withLogin: anotherPlayer.Security.Login);
+            var newPlayerInfo = CreateValidPlayer(withName: anotherPlayer.Name);
 
             var updatePlayerResult = game.UpdatePlayer(playerToBeUpdated, newPlayerInfo);
 
@@ -242,7 +220,7 @@ namespace UnitTests
         public void WhenRemovingNonExistingPlayer_ItFails()
         {
             (var game, var _, var __) = this.CreateDefaultGameWithPlayers();
-            var nonExistingPlayer = CreateValidPlayer(withName: "NonExisting Player", withLogin: "NonExisting Login");
+            var nonExistingPlayer = CreateValidPlayer(withName: "NonExisting Player");
 
             var result = game.RemovePlayer(nonExistingPlayer);
 
@@ -372,8 +350,8 @@ namespace UnitTests
         public void WhenAddingBoardToNonExistingPlayer_ItFails()
         {
             var newGameResult = CreateGameWithoutPlayers();
-            var newPlayer1 = CreateValidPlayer(withName: "Player 01", withLogin: "login 01");
-            var newPlayer2 = CreateValidPlayer(withName: "Player 02", withLogin: "login 01");
+            var newPlayer1 = CreateValidPlayer(withName: "Player 01");
+            var newPlayer2 = CreateValidPlayer(withName: "Player 02");
             newGameResult.Value.AddPlayer(newPlayer1);
 
             var addBoardResult = newGameResult.Value.AddBoardToPlayer(this._randomizer, newPlayer2);
@@ -403,7 +381,7 @@ namespace UnitTests
         {
             (var game, var player1, var _) = CreateDefaultGameWithPlayers();
             var boardToRemove = player1.Boards.First();
-            var nonExistingPlayer = CreateValidPlayer(withName: "NonExistingPlayer", withLogin: "NonExistingLogin");
+            var nonExistingPlayer = CreateValidPlayer(withName: "NonExistingPlayer");
 
             var result = game.RemoveBoardFromPlayer(nonExistingPlayer, boardToRemove);
 
@@ -598,7 +576,7 @@ namespace UnitTests
         {
             (var activeGame, var _, var __, var ___) = SetWinnerPlayerForGame();
 
-            var finishedGameResult = activeGame.SetWinner(CreateValidPlayer(withName: "Another name", withLogin: "login 4"));
+            var finishedGameResult = activeGame.SetWinner(CreateValidPlayer(withName: "Another name"));
 
             finishedGameResult.IsFailure.Should().BeTrue();
         }
@@ -614,8 +592,8 @@ namespace UnitTests
         private (DraftGame game, Player player1, Player player2) CreateDefaultGameWithPlayers(bool shouldBoardsBeAdded = true)
         {
             var draftGame = CreateGameWithoutPlayers().Value;
-            var player1 = CreateValidPlayer(withName: "Player 01", withLogin: "login 01");
-            var player2 = CreateValidPlayer(withName: "Player 02", withLogin: "login 02");
+            var player1 = CreateValidPlayer(withName: "Player 01");
+            var player2 = CreateValidPlayer(withName: "Player 02");
 
             draftGame.AddPlayer(player1);
             draftGame.AddPlayer(player2);
@@ -642,9 +620,8 @@ namespace UnitTests
             return (activeGameResult.Value, chosenPlayerSetToWin, chosenBoardSetToWin, otherPlayer);
         }
 
-        private Player CreateValidPlayer(string withName = "Player 01", 
-            string withLogin = "Login 01", string  withPassword = "Password 01") =>
-            Player.Create(withName, PlayerSecurity.Create(withLogin, withPassword).Value).Value;
+        private Player CreateValidPlayer(string withName = "Player 01") =>
+            Player.Create(withName).Value;
 
         #endregion
     }

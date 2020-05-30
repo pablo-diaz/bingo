@@ -21,40 +21,22 @@
     </div>
 }
 
-@if (player.CanAuthenticateInGameSectionBeShown)
+@if (player.CanSelectPlayerInGameSectionBeShown)
 {
     <h3>Ahora por favor, cuéntanos quién eres tú, dentro del juego "@player.GameSelected.Name"</h3>
-    <EditForm Model=player.LoginModel OnValidSubmit=@(async () => await player.Login())>
-        <DataAnnotationsValidator />
-        <div class="form-row">
-            <div class="col">
-                <label for=@player.LoginModel.Login>Usuario</label>
-                <InputText type="text" class="form-control" placeholder="Escribe el Usuario que te asignaron en este juego" @bind-Value=player.LoginModel.Login />
-                <ValidationMessage For="@(() => player.LoginModel.Login)" />
-            </div>
-        </div>
-        <div class="form-row">
-            <div class="col">
-                <label for=@player.LoginModel.Passwd>Contraseña</label>
-                <InputText type="password" class="form-control" placeholder="Escribe la Contraseña que te asignaron en este juego" @bind-Value=player.LoginModel.Passwd />
-                <ValidationMessage For="@(() => player.LoginModel.Passwd)" />
-            </div>
-        </div>
-        <br /><br />
-        <div class="container-fluid">
-            <div class="row">
+    <div class="container-fluid">
+        <div class="row">
+            @foreach (var p in player.GameSelected.Players)
+            {
                 <div class="col">
-                    <button type="reset" class="btn btn-outline-danger" @onclick=player.CancelLogin>Regresar a la selección de juegos</button>
+                    <button class="btn btn-outline-primary" @onclick=@(() => player.SelectPlayer(p))>@p.Name</button>
                 </div>
-                <div class="col">
-                    <button type="submit" class="btn btn-primary">Ingresar al juego</button>
-                </div>
-            </div>
+            }
         </div>
-    </EditForm>
+    </div>
 }
 
-@if (player.CanLoggedInSectionBeShown)
+@if (player.CanPlayerSelectedSectionBeShown)
 {
     <h3>Hola @player.PlayerModel.Name, bienvenido al juego @player.GameSelected.Name</h3>
 

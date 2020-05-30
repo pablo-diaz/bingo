@@ -11,7 +11,7 @@ namespace UnitTests
         [Test]
         public void CreatingAValidPlayer_Works()
         {
-            var newPlayerResult = Player.Create("Player 01", PlayerSecurity.Create("login 01", "passwd 01").Value);
+            var newPlayerResult = Player.Create("Player 01");
             newPlayerResult.IsSuccess.Should().BeTrue();
         }
 
@@ -19,7 +19,7 @@ namespace UnitTests
         public void CreatingAPlayer_WhenProvidingWrongName_ItFails(
             [Values(null, "")] string withName)
         {
-            var newPlayerResult = Player.Create(withName, PlayerSecurity.Create("login 01", "passwd 01").Value);
+            var newPlayerResult = Player.Create(withName);
             newPlayerResult.IsFailure.Should().BeTrue();
         }
     }

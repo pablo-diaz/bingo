@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 using Core;
+
 using WebUI.Services.DTOs;
 
 namespace WebUI.Models.GameAdmon
@@ -16,6 +17,9 @@ namespace WebUI.Models.GameAdmon
 
         [Required(ErrorMessage = "Por favor selecciona el tipo de juego")]
         public GameType? GameType { get; set; }
+
+        [Required(ErrorMessage = "Por favor decide si los jugadores deben proveer password o no")]
+        public bool? WithPlayerSecurity { get; set; }
 
         public int PlayerCount { get => Players.Count; }
 

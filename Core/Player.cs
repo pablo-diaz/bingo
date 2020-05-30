@@ -10,7 +10,6 @@ namespace Core
         #region Properties
 
         public string Name { get; private set; }
-        public PlayerSecurity Security { get; private set; }
         
         private HashSet<Board> _boards { get; }
         public IReadOnlyCollection<Board> Boards { get => this._boards.ToList(); }
@@ -46,11 +45,9 @@ namespace Core
 
         #region Constructor
 
-        private Player(string name, PlayerSecurity security)
+        private Player(string name)
         {
             this.Name = name;
-            this.Security = security;
-
             this._boards = new HashSet<Board>();
         }
 
@@ -58,12 +55,12 @@ namespace Core
 
         #region Builders
 
-        public static Result<Player> Create(string name, PlayerSecurity playerSecurity)
+        public static Result<Player> Create(string name)
         {
             if (string.IsNullOrEmpty(name))
                 return Result.Failure<Player>("Wrong name");
 
-            return Result.Ok(new Player(name, playerSecurity));
+            return Result.Ok(new Player(name));
         }
 
         #endregion
@@ -88,8 +85,6 @@ namespace Core
         internal void CopyInfoFromPlayer(Player anotherPlayer)
         {
             this.Name = anotherPlayer.Name;
-            this.Security = anotherPlayer.Security;
-
             foreach(var board in anotherPlayer.Boards)
                 this._boards.Add(board);
         }

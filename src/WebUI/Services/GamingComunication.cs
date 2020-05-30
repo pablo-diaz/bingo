@@ -46,22 +46,16 @@ namespace WebUI.Services
             return Result.Ok();
         }
 
-        public Result<GameDTO> AddNewPlayerToGame(string gameName, string playerName, string playerLogin, string playerPassword)
+        public Result<GameDTO> AddNewPlayerToGame(string gameName, string playerName)
         {
             gameName = gameName.Trim();
             playerName = playerName.Trim();
-            playerLogin = playerLogin.Trim().ToLower();
-            playerPassword = playerPassword.Trim();
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == gameName);
             if (gameFound == null)
                 return Result.Failure<GameDTO>("Game has not been found by its name");
 
-            var newPlayerSecurityResult = PlayerSecurity.Create(playerLogin, playerPassword);
-            if (newPlayerSecurityResult.IsFailure)
-                return Result.Failure<GameDTO>(newPlayerSecurityResult.Error);
-
-            var newPlayerResult = Player.Create(playerName, newPlayerSecurityResult.Value);
+            var newPlayerResult = Player.Create(playerName);
             if (newPlayerResult.IsFailure)
                 return Result.Failure<GameDTO>(newPlayerResult.Error);
             
@@ -73,12 +67,10 @@ namespace WebUI.Services
         }
 
         public Result<GameDTO> UpdatePlayerInfoInGame(string gameName, Player existingPlayer, 
-            string newPlayerName, string newPlayerLogin, string newPlayerPassword)
+            string newPlayerName)
         {
             gameName = gameName.Trim();
             newPlayerName = newPlayerName.Trim();
-            newPlayerLogin = newPlayerLogin.Trim().ToLower();
-            newPlayerPassword = newPlayerPassword.Trim();
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == gameName);
             if (gameFound == null)
@@ -88,11 +80,7 @@ namespace WebUI.Services
             if (existingPlayerFound == null)
                 return Result.Failure<GameDTO>("Existing player was not found in game");
 
-            var newPlayerSecurityResult = PlayerSecurity.Create(newPlayerLogin, newPlayerPassword);
-            if (newPlayerSecurityResult.IsFailure)
-                return Result.Failure<GameDTO>(newPlayerSecurityResult.Error);
-
-            var newPlayerInfoResult = Player.Create(newPlayerName, newPlayerSecurityResult.Value);
+            var newPlayerInfoResult = Player.Create(newPlayerName);
             if (newPlayerInfoResult.IsFailure)
                 return Result.Failure<GameDTO>(newPlayerInfoResult.Error);
 
@@ -242,24 +230,22 @@ namespace WebUI.Services
             return Result.Ok(gameFound);
         }
 
-        public Result<(bool loggedInSuccessfully, LoginResultDTO loginResult)> 
-            PerformLogIn(string inGameName, string login, string passwd)
+        public Result<LoginResultDTO> PerformLogIn(string inGameName, string forPlayerName)
         {
             inGameName = inGameName.Trim();
-            login = login.Trim().ToLower();
-            passwd = passwd.Trim();
+            forPlayerName = forPlayerName.Trim();
 
             var gameFound = this._games.FirstOrDefault(g => g.Name == inGameName);
             if (gameFound == null)
-                return Result.Failure<(bool, LoginResultDTO)>("Game has not been found by its name");
+                return Result.Failure<LoginResultDTO>("Game has not been found by its name");
 
-            var playerFound = gameFound.FindPlayer(login, passwd);
+            var playerFound = gameFound.FindPlayer(forPlayerName);
             if(playerFound == null)
-                return Result.Ok<(bool, LoginResultDTO)>((false, null));
+                return Result.Failure<LoginResultDTO>("Player does not exist in Game");
 
             var jwtPlayerToken = this._bingoSecurity.CreateJWTTokenForPlayer(inGameName);
             var loginResult = new LoginResultDTO(playerFound, gameFound.BallsPlayed, jwtPlayerToken);
-            return Result.Ok<(bool, LoginResultDTO)>((true, loginResult));
+            return Result.Ok(loginResult);
         }
 
         public IReadOnlyCollection<GameDTO> GetAllGames() =>
@@ -274,29 +260,5 @@ namespace WebUI.Services
                 .OrderBy(game => game.Name)
                 .ToList()
                 .AsReadOnly();
-
-        private void PrintGames()
-        {
-            System.Console.WriteLine($"-> -> -> -> -> -> ->[GamingCom] {this._games.Count} games found: {string.Join("\n", this._games.Select(g => g.Name))}");
-        }
-
-        private void PrintBoard(Board board)
-        {
-            Console.WriteLine("-> -> -> -> -> -> -> ->[GameCom] Board added: ");
-            var lastLetter = "";
-            board.BallsConfigured
-                .OrderBy(ball => ball.Number)
-                .ToList()
-                .ForEach(ball => {
-                    if (lastLetter != ball.Letter.ToString())
-                    {
-                        lastLetter = ball.Letter.ToString();
-                        Console.WriteLine();
-                        Console.Write($"{ball.Letter}: ");
-                    }
-                    Console.Write($"{ball.Number} ");
-                });
-            Console.WriteLine($"\n------------------- {DateTime.Now} -----------------------------");
-        }
     }
 }

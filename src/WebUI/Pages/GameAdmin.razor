@@ -64,6 +64,21 @@
         </div>
         <div class="form-row">
             <div class="col">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="playerSecurityRadios" id="playerSecurityRadiosYes" value="yes"
+                           @onchange=@(() => admon.GameModel.WithPlayerSecurity = true)>
+                    <label class="form-check-label" for="playerSecurityRadiosYes">Jugadores deben escribir contraseña</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="playerSecurityRadios" id="playerSecurityRadiosNo" value="no"
+                           @onchange=@(() => admon.GameModel.WithPlayerSecurity = false)>
+                    <label class="form-check-label" for="playerSecurityRadiosNo">Jugadores no escibirán contraseña</label>
+                </div>
+                <ValidationMessage For="@(() => admon.GameModel.WithPlayerSecurity)" />
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="col">
                 <label for=@admon.GameModel.GameType>Selecciona el tipo de juego</label>
                 <ul class="list-group">
                     <li class="list-group-item @(admon.GameModel.GameType == Core.GameType.STANDARD ? "active" : "")"
@@ -128,18 +143,6 @@
                 <label for=@admon.PlayerModel.Name>Nombre del Jugador</label>
                 <InputText type="text" class="form-control" placeholder="Escriba un nombre del jugador" @bind-Value=admon.PlayerModel.Name />
                 <ValidationMessage For="@(() => admon.PlayerModel.Name)" />
-            </div>
-        </div>
-        <div class="form-row">
-            <div class="col">
-                <label for=@admon.PlayerModel.Login>Login del Jugador</label>
-                <InputText type="text" class="form-control" placeholder="Escriba un login para el jugador" @bind-Value=admon.PlayerModel.Login />
-                <ValidationMessage For="@(() => admon.PlayerModel.Login)" />
-            </div>
-            <div class="col">
-                <label for=@admon.PlayerModel.Password>Contraseña del Jugador</label>
-                <InputText type="text" class="form-control" placeholder="Escriba una contraseña para el jugador" @bind-Value=admon.PlayerModel.Password />
-                <ValidationMessage For="@(() => admon.PlayerModel.Password)" />
             </div>
         </div>
         <button type="reset" class="btn btn-secondary" @onclick=admon.CancelAddingOrEditingPlayerInfo>Cancelar</button>

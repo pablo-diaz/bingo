@@ -20,8 +20,8 @@ namespace WebUI.ViewModels
         public enum State
         {
             SELECTING_GAME,
-            AUTHENTICATING_IN_GAME,
-            LOGGED_IN
+            SELECTING_PLAYER,
+            PLAYER_SELECTED
         }
 
         private readonly IToastService _toastService;
@@ -37,13 +37,12 @@ namespace WebUI.ViewModels
                 .Select(game => GameModel.FromEntity(game))
                 .ToList();
         public GameModel GameSelected { get; set; }
-        public LoginModel LoginModel { get; set; }
         public PlayerModel PlayerModel { get; set; }
         public List<BallDTO> PlayedBalls { get; private set; }
         
         public bool CanSelectGameSectionBeShown => this._currentState == State.SELECTING_GAME;
-        public bool CanAuthenticateInGameSectionBeShown => this._currentState == State.AUTHENTICATING_IN_GAME;
-        public bool CanLoggedInSectionBeShown => this._currentState == State.LOGGED_IN;
+        public bool CanSelectPlayerInGameSectionBeShown => this._currentState == State.SELECTING_PLAYER;
+        public bool CanPlayerSelectedSectionBeShown => this._currentState == State.PLAYER_SELECTED;
 
         public GamePlayerViewModel(IToastService toastService, GamingComunication gamingComunication,
             NavigationManager navigationManager, IConfiguration configuration)
@@ -65,7 +64,6 @@ namespace WebUI.ViewModels
         {
             this._currentState = State.SELECTING_GAME;
             this.GameSelected = null;
-            this.LoginModel = null;
             this.PlayerModel = null;
             this.PlayedBalls = null;
         }
@@ -73,39 +71,25 @@ namespace WebUI.ViewModels
         public Task SelectGame(GameModel game)
         {
             this.GameSelected = game;
-            this.LoginModel = new LoginModel();
-            this._currentState = State.AUTHENTICATING_IN_GAME;
+            this._currentState = State.SELECTING_PLAYER;
             return Task.CompletedTask;
         }
 
-        public async Task Login()
+        public async Task SelectPlayer(PlayerModel player)
         {
-            var loginResult = this._gamingComunication.PerformLogIn(this.GameSelected.Name, this.LoginModel.Login, this.LoginModel.Passwd);
+            var loginResult = this._gamingComunication.PerformLogIn(this.GameSelected.Name, player.Name);
             if(loginResult.IsFailure)
             {
                 this._toastService.ShowError(loginResult.Error);
                 return;
             }
 
-            (var authSuccess, var resultInfo) = loginResult.Value;
-            if(!authSuccess)
-            {
-                this._toastService.ShowError("Usuario o Contraseña equivocadas. Intenta nuevamente");
-                return;
-            }
+            DisplayBallsPlayedRecentlyBeforeLoggin(loginResult.Value.BallsPlayedRecently);
+            await this.StartBingoHubConnection(loginResult.Value.JWTPlayerToken);
 
-            DisplayBallsPlayedRecentlyBeforeLoggin(resultInfo.BallsPlayedRecently);
-            await this.StartBingoHubConnection(resultInfo.JWTPlayerToken);
-
-            this.PlayerModel = PlayerModel.FromEntity(resultInfo.LoggedInPlayer, this.GameSelected.GameType);
-            this._currentState = State.LOGGED_IN;
+            this.PlayerModel = PlayerModel.FromEntity(loginResult.Value.LoggedInPlayer, this.GameSelected.GameType);
+            this._currentState = State.PLAYER_SELECTED;
             return;
-        }
-
-        public Task CancelLogin()
-        {
-            this.TransitionToSelectingGame();
-            return Task.CompletedTask;
         }
 
         private async Task StartBingoHubConnection(string jwtPlayerToken)

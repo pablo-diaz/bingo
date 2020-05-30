@@ -29,7 +29,7 @@ namespace WebUI.Services.DTOs
             GameStatus.FINISHED => this._finishedGame.Name,
             _ => throw new ApplicationException("Wrong game status")
         };
-
+        
         public GameType GameType => this.GameStatus switch
         {
             GameStatus.DRAFT => this._draftGame.GameType,
@@ -72,25 +72,23 @@ namespace WebUI.Services.DTOs
 
         public bool IsItPlayable => this.GameStatus == GameStatus.ACTIVE;
 
-        private GameDTO()
-        {
+        private GameDTO() { }
 
-        }
-
-        public static GameDTO CreateFromDraftGame(DraftGame game) =>
+        internal static GameDTO CreateFromDraftGame(DraftGame game) =>
             new GameDTO { 
                 GameStatus = GameStatus.DRAFT,
                 _draftGame = game
             };
 
-        public Result AddPlayer(Player newPlayer)
+        internal Result AddPlayer(Player newPlayer)
         {
             if (this.GameStatus != GameStatus.DRAFT)
                 return Result.Failure("Game is not in draft state");
+
             return this._draftGame.AddPlayer(newPlayer);
         }
 
-        public Player FindPlayer(Player existingPlayer) =>
+        internal Player FindPlayer(Player existingPlayer) =>
             this.GameStatus switch {
                 GameStatus.DRAFT => this._draftGame.Players.FirstOrDefault(player => player == existingPlayer),
                 GameStatus.ACTIVE => this._activeGame.Players.FirstOrDefault(player => player == existingPlayer),
@@ -98,7 +96,7 @@ namespace WebUI.Services.DTOs
                 _ => throw new ApplicationException("Wrong game status")
             };
 
-        public Player FindPlayer(string playerName) =>
+        internal Player FindPlayer(string playerName) =>
             this.GameStatus switch
             {
                 GameStatus.DRAFT => this._draftGame.Players.FirstOrDefault(player => player.Name == playerName),
@@ -107,47 +105,35 @@ namespace WebUI.Services.DTOs
                 _ => throw new ApplicationException("Wrong game status")
             };
 
-        public Player FindPlayer(string playerLogin, string playerPasswd) =>
-            this.GameStatus switch
-            {
-                GameStatus.DRAFT => this._draftGame.Players
-                    .FirstOrDefault(player => player.Security.Login == playerLogin && player.Security.Password == playerPasswd),
-                GameStatus.ACTIVE => this._activeGame.Players
-                    .FirstOrDefault(player => player.Security.Login == playerLogin && player.Security.Password == playerPasswd),
-                GameStatus.FINISHED => this._finishedGame.Players
-                    .FirstOrDefault(player => player.Security.Login == playerLogin && player.Security.Password == playerPasswd),
-                _ => throw new ApplicationException("Wrong game status")
-            };
-
-        public Result UpdatePlayer(Player playerToUpdate, Player newPlayerInfo)
+        internal Result UpdatePlayer(Player playerToUpdate, Player newPlayerInfo)
         {
             if (this.GameStatus != GameStatus.DRAFT)
                 return Result.Failure("Game is not in draft state");
             return this._draftGame.UpdatePlayer(playerToUpdate, newPlayerInfo);
         }
 
-        public Result AddBoardToPlayer(Random randomizer, Player toPlayer)
+        internal Result AddBoardToPlayer(Random randomizer, Player toPlayer)
         {
             if (this.GameStatus != GameStatus.DRAFT)
                 return Result.Failure("Game is not in draft state");
             return this._draftGame.AddBoardToPlayer(randomizer, toPlayer);
         }
 
-        public Result RemoveBoardFromPlayer(Player fromPlayer, Board boardRoRemove)
+        internal Result RemoveBoardFromPlayer(Player fromPlayer, Board boardRoRemove)
         {
             if (this.GameStatus != GameStatus.DRAFT)
                 return Result.Failure("Game is not in draft state");
             return this._draftGame.RemoveBoardFromPlayer(fromPlayer, boardRoRemove);
         }
 
-        public Result RemovePlayer(Player player)
+        internal Result RemovePlayer(Player player)
         {
             if (this.GameStatus != GameStatus.DRAFT)
                 return Result.Failure("Game is not in draft state");
             return this._draftGame.RemovePlayer(player);
         }
 
-        public Result Start()
+        internal Result Start()
         {
             if (this.GameStatus != GameStatus.DRAFT)
                 return Result.Failure("Game is not in draft state");
@@ -163,7 +149,7 @@ namespace WebUI.Services.DTOs
             return Result.Ok();
         }
 
-        public Ball FindBallConfigured(string ballName) =>
+        internal Ball FindBallConfigured(string ballName) =>
             this.GameStatus switch
             {
                 GameStatus.DRAFT => this._draftGame.BallsConfigured.FirstOrDefault(ball => ball.Name == ballName),
@@ -172,21 +158,21 @@ namespace WebUI.Services.DTOs
                 _ => throw new ApplicationException("Wrong game status")
             };
 
-        public Result PlayBall(Ball ball)
+        internal Result PlayBall(Ball ball)
         {
             if (this.GameStatus != GameStatus.ACTIVE)
                 return Result.Failure("Game is not Active");
             return this._activeGame.PlayBall(ball);
         }
 
-        public Result<Ball> RadmonlyPlayBall(Random randomizer)
+        internal Result<Ball> RadmonlyPlayBall(Random randomizer)
         {
             if (this.GameStatus != GameStatus.ACTIVE)
                 return Result.Failure<Ball>("Game is not Active");
             return this._activeGame.RadmonlyPlayBall(randomizer);
         }
 
-        public Result SetWinner(Player winner)
+        internal Result SetWinner(Player winner)
         {
             if (this.GameStatus != GameStatus.ACTIVE)
                 return Result.Failure("Game is not Active");

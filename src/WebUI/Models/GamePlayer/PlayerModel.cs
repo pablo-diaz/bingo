@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using System.Collections.Generic;
+
 using Core;
 
 namespace WebUI.Models.GamePlayer

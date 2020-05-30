@@ -68,9 +68,6 @@ namespace Core
             if (this._players.Any(player => player.Name == newPlayer.Name))
                 return Result.Failure("Game already contains the same player");
 
-            if(this._players.Any(player => player.Security == newPlayer.Security))
-                return Result.Failure("Game already contains a player with same security (i.e. same Login)");
-
             this._players.Add(newPlayer);
 
             return Result.Ok();
@@ -89,10 +86,8 @@ namespace Core
 
             var playerWithSameNameExists = this._players.Except(new Player[] { playerToUpdate })
                 .Any(player => player.Name == newPlayerInfo.Name);
-            var playerWithSameLoginExists = this._players.Except(new Player[] { playerToUpdate })
-                .Any(player => player.Security == newPlayerInfo.Security);
 
-            if (playerWithSameNameExists && playerWithSameLoginExists)
+            if (playerWithSameNameExists)
                 return Result.Failure("Game already contains another player with the same new info");
 
             playerToUpdate.CopyInfoFromPlayer(newPlayerInfo);
