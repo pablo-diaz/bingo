@@ -139,7 +139,7 @@ namespace WebUI.ViewModels
             if (this.PlayedBalls.Any(b => b.Name == ball.Name))
                 return;
 
-            this.PlayedBalls.Add(ball);
+            this.PlayedBalls.Insert(0, ball);
 
             if(this.PlayerModel != null)
                 this.PlayerModel.AdjustBoardsState(ball);
