@@ -101,7 +101,7 @@
     <h2>Juego: @admon.CurrentGame.Name <span class="badge badge-info">Tipo @admon.CurrentGame.GameType - @admon.CurrentGame.State</span></h2>
     <button class="btn btn-outline-info" @onclick=admon.TransitionToBrowsing>Regresar a listado de juegos</button>
     <button class="btn btn-primary" @onclick=admon.TransitionToNewPlayer style=@(admon.CurrentGame.IsItADraftGame ? "" : "display: none;")>Crear nuevo jugador</button>
-    <button class="btn btn-info" @onclick=admon.TransitionToCopyPlayersFromOtherGame style=@(admon.CurrentGame.IsItADraftGame && admon.IsItInDevMode ? "" : "display: none;")>Copiar jugadores desde otro Juego</button>
+    <button class="btn btn-info" @onclick=admon.TransitionToCopyPlayersFromOtherGame style=@(admon.CurrentGame.IsItADraftGame ? "" : "display: none;")>Copiar jugadores desde otro Juego</button>
     <button class="btn btn-warning" @onclick=admon.AddTestPlayers style=@(admon.CurrentGame.IsItADraftGame && admon.IsItInDevMode ? "" : "display: none;")>Agregar jugadores de prueba</button>
     <button class="btn btn-success float-right" @onclick=admon.StartGame style=@(admon.CurrentGame.IsItADraftGame ? "" : "display: none;")>Iniciar juego</button>
 
