@@ -9,7 +9,7 @@
 {
     <h1 style=@(player.PlayableGames.Count > 0 ? "" : "display: none;")>Selecciona el Juego al que quieres unirte</h1>
     <h1 style=@(player.PlayableGames.Count == 0 ? "" : "display: none;")>No existen juegos iniciados aún. Habla con el administrador del juego, para que inicie uno</h1>
-    <div class="container-fluid">
+    <div class="container-fluid" translate="no">
         <div class="row">
             @foreach (var game in player.PlayableGames)
             {
@@ -24,7 +24,7 @@
 @if (player.CanSelectPlayerInGameSectionBeShown)
 {
     <h3>Ahora por favor, cuéntanos quién eres tú, dentro del juego "@player.GameSelected.Name"</h3>
-    <div class="container-fluid">
+    <div class="container-fluid" translate="no">
         <div class="row">
             @foreach (var p in player.GameSelected.Players)
             {
