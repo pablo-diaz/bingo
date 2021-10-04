@@ -25,7 +25,7 @@ namespace Core
                 return false;
             if (ReferenceEquals(this, other))
                 return true;
-            return Name == other.Name;
+            return false;
         }
 
         public static bool operator ==(Player a, Player b)
@@ -45,22 +45,28 @@ namespace Core
 
         #region Constructor
 
-        private Player(string name)
+        private Player(string name, Board defaultBoard)
         {
             this.Name = name;
-            this._boards = new HashSet<Board>();
+            this._boards = new HashSet<Board>() { defaultBoard };
         }
 
         #endregion
 
         #region Builders
 
-        public static Result<Player> Create(string name)
+        internal static Result<Player> Create(string name, HashSet<Ball> withBallSet,
+            int withNBallsPerColumn, GameType gameType)
         {
-            if (string.IsNullOrEmpty(name))
-                return Result.Failure<Player>("Wrong name");
+            var result = ValidateName(name);
+            if (result.IsFailure)
+                return Result.Failure<Player>(result.Error);
 
-            return Result.Ok(new Player(name));
+            var defaultBoardResult = Board.Create(withBallSet, withNBallsPerColumn, gameType);
+            if (defaultBoardResult.IsFailure)
+                return Result.Failure<Player>(defaultBoardResult.Error);
+
+            return new Player(name, defaultBoardResult.Value);
         }
 
         #endregion
@@ -77,16 +83,23 @@ namespace Core
             if (!this._boards.Contains(board))
                 return Result.Failure("Board does not exist in Player's boards");
             
+            if(this._boards.Count == 1)
+                return Result.Failure("You cannot remove this last board");
+
             this._boards.Remove(board);
 
-            return Result.Ok();
+            return Result.Success();
         }
 
-        internal void CopyInfoFromPlayer(Player anotherPlayer)
+        internal Result SetInfo(string name)
         {
-            this.Name = anotherPlayer.Name;
-            foreach(var board in anotherPlayer.Boards)
-                this._boards.Add(board);
+            var result = ValidateName(name);
+            if (result.IsFailure)
+                return Result.Failure<Player>(result.Error);
+
+            this.Name = name;
+
+            return Result.Success();
         }
 
         internal void PlayBall(Ball ballToPlay)
@@ -94,6 +107,15 @@ namespace Core
             foreach(var board in this._boards)
                 board.PlayBall(ballToPlay);
         }
+
+        #endregion
+
+        #region Validators
+
+        private static Result ValidateName(string name) =>
+            string.IsNullOrEmpty(name)
+            ? Result.Failure("Please provide a valid Name")
+            : Result.Success();
 
         #endregion
     }

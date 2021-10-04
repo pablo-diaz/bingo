@@ -6,39 +6,23 @@ using CSharpFunctionalExtensions;
 
 namespace Core
 {
-    public class ActiveGame
+    public class ActiveGame: Game
     {
-        #region Properties
-
-        public string Name { get; }
-        public GameType GameType { get; }
-
-        public IReadOnlyCollection<Ball> BallsConfigured { get ; }
-
-        private HashSet<Ball> _ballsPlayed;
-        public IReadOnlyCollection<Ball> BallsPlayed { get => this._ballsPlayed.ToList(); }
-
-        public IReadOnlyCollection<Player> Players { get; }
-
-        #endregion
-
         #region Constructors
 
-        internal ActiveGame(string name, GameType gameType, IReadOnlyCollection<Player> withPlayers, 
-            IReadOnlyCollection<Ball> withBallsConfigured)
+        internal ActiveGame(string name, GameType gameType,
+                HashSet<Ball> withBalls, short withMaxNBallsPerColumn,
+                HashSet<Player> players) :
+            base(name: name, gameType: gameType, balls: withBalls,
+                maxNBallsPerColumn: withMaxNBallsPerColumn, players: players)
         {
-            this.Name = name;
-            this.GameType = gameType;
-            this.Players = withPlayers;
-            this.BallsConfigured = withBallsConfigured;
-            this._ballsPlayed = new HashSet<Ball>();
         }
 
         #endregion
 
         #region Public Methods
         
-        public Result PlayBall(Ball ballToPlay)
+        public override Result PlayBall(Ball ballToPlay)
         {
             if (!this.BallsConfigured.Contains(ballToPlay))
                 return Result.Failure("Ball is not in the possible set");
@@ -51,27 +35,12 @@ namespace Core
 
             this._ballsPlayed.Add(ballToPlay);
 
-            return Result.Ok();
+            return Result.Success();
         }
 
-        public Result<FinishedGame> SetWinner(Player winner)
+        public override Result<Ball> RadmonlyPlayBall()
         {
-            if (winner == null)
-                return Result.Failure<FinishedGame>("Player is Null");
-
-            if(!this.Players.Any(player => player.Name == winner.Name))
-                return Result.Failure<FinishedGame>("Player is not part of the game");
-
-            if(!winner.Boards.Any(board => board.State == BoardState.Winner))
-                return Result.Failure<FinishedGame>("This Player does not have a winning Board");
-
-            var newFinishedGame = new FinishedGame(this.Name, this.GameType, this.BallsConfigured, this.Players, this.BallsPlayed, winner);
-            return Result.Ok(newFinishedGame);
-        }
-
-        public Result<Ball> RadmonlyPlayBall(Random randomizer)
-        {
-            var randomBallResult = GetRandomBallPendingToBePlayed(randomizer);
+            var randomBallResult = GetRandomBallPendingToBePlayed();
             if (randomBallResult.IsFailure)
                 return randomBallResult;
 
@@ -82,32 +51,56 @@ namespace Core
             return randomBallResult;
         }
 
-        public Result<List<(Player potentialWinner, List<Board> winningBoards)>> GetPotentialWinners()
+        public override Result<Game> SetWinner(Player winner)
         {
-            var winners = this.Players
-                .Where(player => player.Boards.Any(board => board.State == BoardState.Winner))
-                .Select(player => (player, player.Boards.Where(board => board.State == BoardState.Winner).ToList()))
-                .ToList();
+            if (winner == null)
+                return Result.Failure<Game>("Player is Null");
 
-            return Result.Ok(winners);
+            if(!this.Players.Any(player => player == winner))
+                return Result.Failure<Game>("Player is not part of the game");
+
+            if(!winner.Boards.Any(board => board.State == BoardState.Winner))
+                return Result.Failure<Game>("This Player does not have a winning Board");
+
+            return new FinishedGame(this.Name, this.GameType, this._ballsConfigured,
+                this.MaxNBallsPerColumn, this._players, winner, this._ballsPlayed);
         }
 
         #endregion
 
         #region Helpers
 
-        private Result<Ball> GetRandomBallPendingToBePlayed(Random randomizer)
+        private Result<Ball> GetRandomBallPendingToBePlayed()
         {
-            if (randomizer == null)
-                return Result.Failure<Ball>("Randomizer cannot be null");
-
             var pendingBallsToBePlayed = this.BallsConfigured.Except(this._ballsPlayed).ToList();
             if(pendingBallsToBePlayed.Count == 0)
                 return Result.Failure<Ball>("There are no more pending balls to be played");
 
-            var randomIndex = randomizer.Next(0, pendingBallsToBePlayed.Count);
-            return Result.Ok(pendingBallsToBePlayed[randomIndex]);
+            var randomIndex = RandomizingUtilities.GetRandomValue(pendingBallsToBePlayed.Count);
+            return pendingBallsToBePlayed[randomIndex];
         }
+
+        #endregion
+
+        #region Methods that are not allowed for this Game State
+
+        public override Result AddPlayer(string withName) =>
+            Result.Failure("An Active Game cannot Add Players");
+
+        public override Result<Board> AddBoardToPlayer(Player player) =>
+            Result.Failure<Board>("An Active Game cannot Add more Boards to Players");
+
+        public override Result RemoveBoardFromPlayer(Player player, Board board) =>
+            Result.Failure("An Active Game cannot Remove any Board from Players");
+
+        public override Result UpdatePlayerInfo(Player playerToUpdate, string newName) =>
+            Result.Failure("An Active Game cannot Update Players");
+
+        public override Result RemovePlayer(Player playerToRemove) =>
+            Result.Failure("An Active Game cannot Remove Players");
+
+        public override Result<Game> Start() =>
+            Result.Failure<Game>("An Active Game cannot Start the Game once again");
 
         #endregion
     }

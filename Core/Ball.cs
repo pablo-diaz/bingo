@@ -27,12 +27,12 @@ namespace Core
             Letter = letter;
         }
 
-        public static Result<Ball> Create(BallLeter letter, short number)
+        internal static Result<Ball> Create(BallLeter letter, short number)
         {
             if (number <= 0)
                 return Result.Failure<Ball>("Wrong number value");
 
-            return Result.Ok(new Ball(number, letter));
+            return Result.Success(new Ball(number, letter));
         }
     }
 }

@@ -51,9 +51,8 @@ namespace WebUI.Models.GameAdmon
                                                             .ToList()
             };
 
-        private static Dictionary<string, List<BallModel>> BuildMasterBoardState(GameDTO game)
-        {
-            var result = new Dictionary<string, List<BallModel>>() {
+        private static Dictionary<string, List<BallModel>> BuildMasterBoardState(GameDTO game) =>
+            new Dictionary<string, List<BallModel>>() {
                 { "B", GetBallsByLetter(game, BallLeter.B) },
                 { "I", GetBallsByLetter(game, BallLeter.I) },
                 { "N", GetBallsByLetter(game, BallLeter.N) },
@@ -61,12 +60,8 @@ namespace WebUI.Models.GameAdmon
                 { "O", GetBallsByLetter(game, BallLeter.O) }
             };
 
-            return result;
-        }
-
-        private static List<BallModel> GetBallsByLetter(GameDTO game, BallLeter letter)
-        {
-            return game.BallsConfigured.Where(ball => ball.Letter == letter)
+        private static List<BallModel> GetBallsByLetter(GameDTO game, BallLeter letter) =>
+            game.BallsConfigured.Where(ball => ball.Letter == letter)
                 .Select(ball => new BallModel { 
                     Letter = ball.Letter.ToString(), 
                     Number = ball.Number, 
@@ -75,6 +70,5 @@ namespace WebUI.Models.GameAdmon
                 })
                 .OrderBy(ball => ball.Number)
                 .ToList();
-        }
     }
 }

@@ -6,126 +6,85 @@ using CSharpFunctionalExtensions;
 
 namespace Core
 {
-    public class DraftGame
+    public class DraftGame: Game
     {
-        #region Properties
-
-        public string Name { get; }
-        public GameType GameType { get; }
-        public short WithNBallsMaxPerBoardBucket { get; }
-
-        private HashSet<Ball> _ballsConfigured;
-
-        public IReadOnlyCollection<Ball> BallsConfigured { get => this._ballsConfigured.ToList(); }
-
-        private HashSet<Player> _players;
-        public IReadOnlyCollection<Player> Players { get => this._players.ToList(); }
-
-        #endregion
-
         #region Constructors
 
-        private DraftGame(string name, GameType gameType, HashSet<Ball> withBalls, short withNBallsMaxPerBoardBucket)
+        internal DraftGame(string name, GameType gameType,
+                HashSet<Ball> withBalls, short withMaxNBallsPerColumn):
+            base(name: name, gameType: gameType, balls: withBalls,
+                maxNBallsPerColumn: withMaxNBallsPerColumn)
         {
-            this.Name = name;
-            this.GameType = gameType;
-            this.WithNBallsMaxPerBoardBucket = withNBallsMaxPerBoardBucket;
-
-            this._players = new HashSet<Player>();
-            this._ballsConfigured = withBalls;
-        }
-
-        #endregion
-
-        #region Builders
-
-        public static Result<DraftGame> Create(string name, GameType gameType, short withNBallsTotal, short withNBallsMaxPerBoardBucket)
-        {
-            if (string.IsNullOrEmpty(name))
-                return Result.Failure<DraftGame>("Name should be valid");
-
-            if(withNBallsTotal <= 0 || withNBallsTotal % 5 != 0)
-                return Result.Failure<DraftGame>("Provide enough balls to play game");
-
-            if(withNBallsMaxPerBoardBucket <= 1)
-                return Result.Failure<DraftGame>("Provide a valid number for balls per board bucket, so we can randomly create boards");
-
-            if (withNBallsMaxPerBoardBucket > ((withNBallsTotal / 5) - 1))
-                return Result.Failure<DraftGame>("Provide enough balls per board bucket, so we can randomly create boards");
-
-            return Result.Ok(new DraftGame(name, gameType, CreateNBallsSet(withNBallsTotal), withNBallsMaxPerBoardBucket));
         }
 
         #endregion
 
         #region Public Methods
 
-        public Result AddPlayer(Player newPlayer)
+        public override Result AddPlayer(string withName)
         {
-            if (newPlayer == null)
-                return Result.Failure("New player is null");
+            if (string.IsNullOrEmpty(withName))
+                return Result.Failure("New player name is null");
 
-            if (this._players.Any(player => player.Name == newPlayer.Name))
-                return Result.Failure("Game already contains the same player");
+            if(this._players.Any(p => p.Name == withName))
+                return Result.Failure("There is already another Player with the same name");
 
-            this._players.Add(newPlayer);
+            var newPlayerResult = Player.Create(name: withName, withBallSet: this._ballsConfigured,
+                withNBallsPerColumn: this.MaxNBallsPerColumn, gameType: this.GameType);
+            if (newPlayerResult.IsFailure)
+                return Result.Failure(newPlayerResult.Error);
 
-            return Result.Ok();
+            this._players.Add(newPlayerResult.Value);
+
+            return Result.Success();
         }
 
-        public Result UpdatePlayer(Player playerToUpdate, Player newPlayerInfo)
+        public override Result UpdatePlayerInfo(Player playerToUpdate, string withName)
         {
-            if (playerToUpdate == null)
-                return Result.Failure("Player is null");
-
-            if (newPlayerInfo == null)
-                return Result.Failure("New player info is null");
-
-            if (!this._players.Any(player => player.Name == playerToUpdate.Name))
+            if (!this._players.Any(player => player == playerToUpdate))
                 return Result.Failure("Game does not contain player that is to be updated");
 
-            var playerWithSameNameExists = this._players.Except(new Player[] { playerToUpdate })
-                .Any(player => player.Name == newPlayerInfo.Name);
-
-            if (playerWithSameNameExists)
+            if (IsThereAnyOtherPlayerWithSameName(playerToUpdate, withName))
                 return Result.Failure("Game already contains another player with the same new info");
 
-            playerToUpdate.CopyInfoFromPlayer(newPlayerInfo);
-            
-            return Result.Ok();
+            var result = playerToUpdate.SetInfo(withName);
+            if (result.IsFailure)
+                return result;
+
+            return Result.Success();
         }
 
-        public Result RemovePlayer(Player playerToRemove)
+        public override Result RemovePlayer(Player playerToRemove)
         {
             if (playerToRemove == null)
                 return Result.Failure("Player is null");
 
-            if (!this._players.Any(player => player.Name == playerToRemove.Name))
+            if (!this._players.Any(player => player == playerToRemove))
                 return Result.Failure("Player does not exist in Game");
+
+            if(this.Players.Count == 2)
+                return Result.Failure("There sould exist at least 2 players in this game");
 
             this._players.Remove(playerToRemove);
 
-            return Result.Ok();
+            return Result.Success();
         }
 
-        public Result<ActiveGame> Start()
+        public override Result<Game> Start()
         {
             if (this._players.Count() < 2)
-                return Result.Failure<ActiveGame>("There should be at least 2 Players to start Game");
+                return Result.Failure<Game>("There should be at least 2 Players to start Game");
 
-            if(this._players.Any(player => !player.Boards.Any()))
-                return Result.Failure<ActiveGame>("There should be at least 1 board setup for each Player to start Game");
-
-            var newActiveGame = new ActiveGame(this.Name, this.GameType, this.Players, this.BallsConfigured);
-            return Result.Ok(newActiveGame);
+            return new ActiveGame(this.Name, this.GameType, this._ballsConfigured,
+                this.MaxNBallsPerColumn, this._players);
         }
 
-        public Result<Board> AddBoardToPlayer(Random randomizer, Player player)
+        public override Result<Board> AddBoardToPlayer(Player player)
         {
-            if(!this._players.Any(p => p.Name == player.Name))
+            if(!this._players.Any(p => p == player))
                 return Result.Failure<Board>("Player is not part of Game");
 
-            var newBoardResult = TryCreatingNewBoard(randomizer, tryUpToNTimes: 10, this.GameType);
+            var newBoardResult = TryCreatingNewBoard(tryUpToNTimes: 10, this.GameType);
             if (newBoardResult.IsFailure)
                 return newBoardResult;
 
@@ -134,9 +93,9 @@ namespace Core
             return newBoardResult;
         }
 
-        public Result RemoveBoardFromPlayer(Player player, Board board)
+        public override Result RemoveBoardFromPlayer(Player player, Board board)
         {
-            if (!this._players.Any(p => p.Name == player.Name))
+            if (!this._players.Any(p => p == player))
                 return Result.Failure<Board>("Player is not part of Game");
 
             return player.RemoveBoard(board);
@@ -146,36 +105,17 @@ namespace Core
 
         #region Helpers
 
-        private static HashSet<Ball> CreateNBallsSet(short nBalls)
-        {
-            var ballList = Enumerable.Range(1, nBalls)
-                .Select(number =>
-                {
-                    var letter = GetBallLetterForMaxBallCount((short)number, nBalls);
-                    var newBallResult = Ball.Create(letter, (short)number);
-                    if (newBallResult.IsFailure)
-                        throw new ApplicationException(newBallResult.Error);
-                    return newBallResult.Value;
-                })
-                .ToList();
+        private bool IsThereAnyOtherPlayerWithSameName(Player playerToCheck, string nameToCheckInOthers) =>
+            this._players.Except(new Player[] { playerToCheck })
+                .Any(player => player.Name == nameToCheckInOthers);
 
-            return new HashSet<Ball>(ballList);
-        }
-
-        private static BallLeter GetBallLetterForMaxBallCount(short ballNumber, short maxBallCount)
-        {
-            var maxItemsPerBucket = maxBallCount / 5;
-            var bucketIndex = (ballNumber - 1) / maxItemsPerBucket;
-            return new BallLeter[] { BallLeter.B, BallLeter.I, BallLeter.N, BallLeter.G, BallLeter.O }[bucketIndex];
-        }
-
-        private Result<Board> TryCreatingNewBoard(Random randomizer, short tryUpToNTimes, GameType gameType)
+        private Result<Board> TryCreatingNewBoard(short tryUpToNTimes, GameType gameType)
         {
             var tryCount = 1;
             while(tryCount <= tryUpToNTimes)
             {
-                var newBoardResult = Board.RandonmlyCreateFromBallSet(randomizer, this._ballsConfigured, 
-                    this.WithNBallsMaxPerBoardBucket, gameType);
+                var newBoardResult = Board.Create(this._ballsConfigured, 
+                    this.MaxNBallsPerColumn, gameType);
                 if (newBoardResult.IsFailure)
                     return newBoardResult;
 
@@ -187,6 +127,19 @@ namespace Core
 
             return Result.Failure<Board>("We were not able to randomly create a Board");
         }
+
+        #endregion
+
+        #region Methods that are not allowed for this Game State
+
+        public override Result PlayBall(Ball ballToPlay) =>
+            Result.Failure("A Draft Game cannot Play any Ball, because it has not been Started yet");
+
+        public override Result<Ball> RadmonlyPlayBall() =>
+            Result.Failure<Ball>("A Draft Game cannot Play any Ball, because it has not been Started yet");
+
+        public override Result<Game> SetWinner(Player winner) =>
+            Result.Failure<Game>("A Draft Game cannot set a Winner");
 
         #endregion
     }

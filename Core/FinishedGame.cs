@@ -1,32 +1,54 @@
 ﻿using System.Collections.Generic;
 
+using CSharpFunctionalExtensions;
+
 namespace Core
 {
-    public class FinishedGame
+    public class FinishedGame: Game
     {
-        #region Properties
+        #region Constructors
 
-        public string Name { get; }
-        public GameType GameType { get; }
-        public Player Winner { get; }
-        public IReadOnlyCollection<Ball> BallsConfigured { get; }
-        public IReadOnlyCollection<Ball> BallsPlayed { get; }
-        public IReadOnlyCollection<Player> Players { get; }
+        internal FinishedGame(string name, GameType gameType,
+                HashSet<Ball> balls, short maxNBallsPerColumn,
+                HashSet<Player> players, Player withWinner,
+                HashSet<Ball> withBallsPlayed) :
+            base(name: name, gameType: gameType, balls: balls,
+                maxNBallsPerColumn: maxNBallsPerColumn,
+                players: players, winner: withWinner,
+                ballsPlayed: withBallsPlayed)
+        {
+        }
 
         #endregion
 
-        #region Constructors
+        #region Methods that are not allowed for this Game State
 
-        internal FinishedGame(string name, GameType gameType, IReadOnlyCollection<Ball> withBallsConfigured, 
-            IReadOnlyCollection<Player> withPlayers, IReadOnlyCollection<Ball> withBallsPlayed, Player withWinner)
-        {
-            this.Name = name;
-            this.GameType = gameType;
-            this.Winner = withWinner;
-            this.Players = withPlayers;
-            this.BallsConfigured = withBallsConfigured;
-            this.BallsPlayed = withBallsPlayed;
-        }
+        public override Result AddPlayer(string withName) =>
+            Result.Failure("Operation cannot be performed, due to the state of this game");
+
+        public override Result UpdatePlayerInfo(Player playerToUpdate, string newName) =>
+            Result.Failure("Operation cannot be performed, due to the state of this game");
+
+        public override Result<Board> AddBoardToPlayer(Player player) =>
+            Result.Failure<Board>("Operation cannot be performed, due to the state of this game");
+
+        public override Result RemoveBoardFromPlayer(Player player, Board board) =>
+            Result.Failure("Operation cannot be performed, due to the state of this game");
+
+        public override Result RemovePlayer(Player playerToRemove) =>
+            Result.Failure("Operation cannot be performed, due to the state of this game");
+
+        public override Result<Game> Start() =>
+            Result.Failure<Game>("Operation cannot be performed, due to the state of this game");
+
+        public override Result PlayBall(Ball ballToPlay) =>
+            Result.Failure("Operation cannot be performed, due to the state of this game");
+
+        public override Result<Ball> RadmonlyPlayBall() =>
+            Result.Failure<Ball>("Operation cannot be performed, due to the state of this game");
+
+        public override Result<Game> SetWinner(Player winner) =>
+            Result.Failure<Game>("Operation cannot be performed, due to the state of this game");
 
         #endregion
     }
