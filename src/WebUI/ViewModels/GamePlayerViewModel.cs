@@ -25,7 +25,7 @@ namespace WebUI.ViewModels
         }
 
         private readonly IToastService _toastService;
-        private readonly GamingComunication _gamingComunication;
+        private readonly GameState _gamingComunication;
         private readonly NavigationManager _navigationManager;
         private readonly IConfiguration _configuration;
         private State _currentState;
@@ -44,7 +44,7 @@ namespace WebUI.ViewModels
         public bool CanSelectPlayerInGameSectionBeShown => this._currentState == State.SELECTING_PLAYER;
         public bool CanPlayerSelectedSectionBeShown => this._currentState == State.PLAYER_SELECTED;
 
-        public GamePlayerViewModel(IToastService toastService, GamingComunication gamingComunication,
+        public GamePlayerViewModel(IToastService toastService, GameState gamingComunication,
             NavigationManager navigationManager, IConfiguration configuration)
         {
             this._toastService = toastService;
@@ -77,7 +77,7 @@ namespace WebUI.ViewModels
 
         public async Task SelectPlayer(PlayerModel player)
         {
-            var loginResult = this._gamingComunication.PerformLogIn(this.GameSelected.Name, player.Name);
+            var loginResult = this._gamingComunication.PerformLogIn(this.GameSelected.Name, player.PlayerEntity);
             if(loginResult.IsFailure)
             {
                 this._toastService.ShowError(loginResult.Error);

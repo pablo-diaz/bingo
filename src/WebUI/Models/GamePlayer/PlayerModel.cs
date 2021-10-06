@@ -9,6 +9,7 @@ namespace WebUI.Models.GamePlayer
     {
         public string Name { get; set; }
         public GameType GameType { get; set; }
+        public Player PlayerEntity { get; set; }
 
         public List<BoardModel> Boards { get; set; }
 
@@ -26,6 +27,7 @@ namespace WebUI.Models.GamePlayer
             new PlayerModel { 
                 Name = entity.Name,
                 GameType = gameType,
+                PlayerEntity = entity,
                 Boards = entity.Boards
                                .Select(board => new BoardModel {
                     Balls = board.BallsConfigured

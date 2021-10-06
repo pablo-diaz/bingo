@@ -17,175 +17,74 @@ namespace WebUI.Services.DTOs
 
     public class GameDTO
     {
-        private DraftGame _draftGame;
-        private ActiveGame _activeGame;
-        private FinishedGame _finishedGame;
+        private Game _game;
         
         public GameStatus GameStatus { get; private set; } = GameStatus.DRAFT;
 
-        public string Name => this.GameStatus switch { 
-            GameStatus.DRAFT => this._draftGame.Name,
-            GameStatus.ACTIVE => this._activeGame.Name,
-            GameStatus.FINISHED => this._finishedGame.Name,
-            _ => throw new ApplicationException("Wrong game status")
-        };
-        
-        public GameType GameType => this.GameStatus switch
-        {
-            GameStatus.DRAFT => this._draftGame.GameType,
-            GameStatus.ACTIVE => this._activeGame.GameType,
-            GameStatus.FINISHED => this._finishedGame.GameType,
-            _ => throw new ApplicationException("Wrong game status")
-        };
+        public string Name => this._game.Name;
 
-        public Maybe<Player> Winner => this.GameStatus switch
-        {
-            GameStatus.DRAFT => Maybe<Player>.None,
-            GameStatus.ACTIVE => Maybe<Player>.None,
-            GameStatus.FINISHED => this._finishedGame.Winner,
-            _ => throw new ApplicationException("Wrong game status")
-        };
+        public GameType GameType => this._game.GameType;
 
-        public IReadOnlyCollection<Ball> BallsConfigured => this.GameStatus switch
-        {
-            GameStatus.DRAFT => this._draftGame.BallsConfigured,
-            GameStatus.ACTIVE => this._activeGame.BallsConfigured,
-            GameStatus.FINISHED => this._finishedGame.BallsConfigured,
-            _ => throw new ApplicationException("Wrong game status")
-        };
+        public Maybe<Player> Winner => this._game.Winner;
 
-        public IReadOnlyCollection<Ball> BallsPlayed => this.GameStatus switch
-        {
-            GameStatus.DRAFT => new List<Ball>(),
-            GameStatus.ACTIVE => this._activeGame.BallsPlayed,
-            GameStatus.FINISHED => this._finishedGame.BallsPlayed,
-            _ => throw new ApplicationException("Wrong game status")
-        };
+        public IReadOnlyCollection<Ball> BallsConfigured => this._game.BallsConfigured;
 
-        public IReadOnlyCollection<Player> Players => this.GameStatus switch
-        {
-            GameStatus.DRAFT => this._draftGame.Players,
-            GameStatus.ACTIVE => this._activeGame.Players,
-            GameStatus.FINISHED => this._finishedGame.Players,
-            _ => throw new ApplicationException("Wrong game status")
-        };
+        public IReadOnlyCollection<Ball> BallsPlayed => this._game.BallsPlayed;
+
+        public IReadOnlyCollection<Player> Players => this._game.Players;
 
         public bool IsItPlayable => this.GameStatus == GameStatus.ACTIVE;
 
-        private GameDTO() { }
-
-        internal static GameDTO CreateFromDraftGame(DraftGame game) =>
-            new GameDTO { 
-                GameStatus = GameStatus.DRAFT,
-                _draftGame = game
-            };
-
-        internal Result AddPlayer(Player newPlayer)
+        private GameDTO(Game game)
         {
-            if (this.GameStatus != GameStatus.DRAFT)
-                return Result.Failure("Game is not in draft state");
-
-            return this._draftGame.AddPlayer(newPlayer);
+            this.GameStatus = GameStatus.DRAFT;
+            this._game = game;
         }
 
-        internal Player FindPlayer(Player existingPlayer) =>
-            this.GameStatus switch {
-                GameStatus.DRAFT => this._draftGame.Players.FirstOrDefault(player => player == existingPlayer),
-                GameStatus.ACTIVE => this._activeGame.Players.FirstOrDefault(player => player == existingPlayer),
-                GameStatus.FINISHED => this._finishedGame.Players.FirstOrDefault(player => player == existingPlayer),
-                _ => throw new ApplicationException("Wrong game status")
-            };
+        internal static GameDTO CreateFromGame(Game game) => new GameDTO(game);
 
-        internal Player FindPlayer(string playerName) =>
-            this.GameStatus switch
-            {
-                GameStatus.DRAFT => this._draftGame.Players.FirstOrDefault(player => player.Name == playerName),
-                GameStatus.ACTIVE => this._activeGame.Players.FirstOrDefault(player => player.Name == playerName),
-                GameStatus.FINISHED => this._finishedGame.Players.FirstOrDefault(player => player.Name == playerName),
-                _ => throw new ApplicationException("Wrong game status")
-            };
+        internal Result AddPlayer(string withName) => this._game.AddPlayer(withName);
 
-        internal Result UpdatePlayer(Player playerToUpdate, Player newPlayerInfo)
-        {
-            if (this.GameStatus != GameStatus.DRAFT)
-                return Result.Failure("Game is not in draft state");
-            return this._draftGame.UpdatePlayer(playerToUpdate, newPlayerInfo);
-        }
+        internal Result UpdatePlayer(Player playerToUpdate, string withNewPlayerName) =>
+            this._game.UpdatePlayerInfo(playerToUpdate, newName: withNewPlayerName);
 
-        internal Result AddBoardToPlayer(Random randomizer, Player toPlayer)
-        {
-            if (this.GameStatus != GameStatus.DRAFT)
-                return Result.Failure("Game is not in draft state");
-            return this._draftGame.AddBoardToPlayer(randomizer, toPlayer);
-        }
+        internal Result AddBoardToPlayer(Player toPlayer) => this._game.AddBoardToPlayer(toPlayer);
 
-        internal Result RemoveBoardFromPlayer(Player fromPlayer, Board boardRoRemove)
-        {
-            if (this.GameStatus != GameStatus.DRAFT)
-                return Result.Failure("Game is not in draft state");
-            return this._draftGame.RemoveBoardFromPlayer(fromPlayer, boardRoRemove);
-        }
+        internal Result RemoveBoardFromPlayer(Player fromPlayer, Board boardRoRemove) =>
+            this._game.RemoveBoardFromPlayer(fromPlayer, boardRoRemove);
 
-        internal Result RemovePlayer(Player player)
-        {
-            if (this.GameStatus != GameStatus.DRAFT)
-                return Result.Failure("Game is not in draft state");
-            return this._draftGame.RemovePlayer(player);
-        }
+        internal Result RemovePlayer(Player player) => this._game.RemovePlayer(player);
 
         internal Result Start()
         {
-            if (this.GameStatus != GameStatus.DRAFT)
-                return Result.Failure("Game is not in draft state");
-            
-            var activeGameResult = this._draftGame.Start();
-            if (activeGameResult.IsFailure)
-                return activeGameResult;
+            var startResult = this._game.Start();
+            if (startResult.IsFailure)
+                return startResult;
 
-            this._draftGame = null;
-            this._activeGame = activeGameResult.Value;
+            this._game = startResult.Value;
             this.GameStatus = GameStatus.ACTIVE;
 
-            return Result.Ok();
+            return Result.Success();
         }
 
-        internal Ball FindBallConfigured(string ballName) =>
-            this.GameStatus switch
-            {
-                GameStatus.DRAFT => this._draftGame.BallsConfigured.FirstOrDefault(ball => ball.Name == ballName),
-                GameStatus.ACTIVE => this._activeGame.BallsConfigured.FirstOrDefault(ball => ball.Name == ballName),
-                GameStatus.FINISHED => this._finishedGame.BallsConfigured.FirstOrDefault(ball => ball.Name == ballName),
-                _ => throw new ApplicationException("Wrong game status")
-            };
+        internal Maybe<Ball> FindBallConfigured(string ballName) =>
+            this._game.BallsConfigured.FirstOrDefault(ball => ball.Name == ballName)
+            ?? Maybe<Ball>.None;
 
-        internal Result PlayBall(Ball ball)
-        {
-            if (this.GameStatus != GameStatus.ACTIVE)
-                return Result.Failure("Game is not Active");
-            return this._activeGame.PlayBall(ball);
-        }
+        internal Result PlayBall(Ball ball) => this._game.PlayBall(ball);
 
-        internal Result<Ball> RadmonlyPlayBall(Random randomizer)
-        {
-            if (this.GameStatus != GameStatus.ACTIVE)
-                return Result.Failure<Ball>("Game is not Active");
-            return this._activeGame.RadmonlyPlayBall(randomizer);
-        }
+        internal Result<Ball> RadmonlyPlayBall() => this._game.RadmonlyPlayBall();
 
         internal Result SetWinner(Player winner)
         {
-            if (this.GameStatus != GameStatus.ACTIVE)
-                return Result.Failure("Game is not Active");
+            var setWinnerResult = this._game.SetWinner(winner);
+            if (setWinnerResult.IsFailure)
+                return setWinnerResult;
 
-            var finishedGameResult = this._activeGame.SetWinner(winner);
-            if (finishedGameResult.IsFailure)
-                return finishedGameResult;
-
-            this._activeGame = null;
-            this._finishedGame = finishedGameResult.Value;
+            this._game = setWinnerResult.Value;
             this.GameStatus = GameStatus.FINISHED;
 
-            return Result.Ok();
+            return Result.Success();
         }
     }
 }

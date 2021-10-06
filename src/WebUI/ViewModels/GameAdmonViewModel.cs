@@ -30,7 +30,7 @@ namespace WebUI.ViewModels
         }
 
         private readonly IToastService _toastService;
-        private readonly GamingComunication _gamingComunication;
+        private readonly GameState _gamingComunication;
         private readonly IConfiguration _configuration;
         private State _currentState;
 
@@ -58,7 +58,7 @@ namespace WebUI.ViewModels
 
         public bool IsThereAWinnerAlready => this.CurrentGame.GameEntity.Winner.HasValue;
 
-        public GameAdmonViewModel(IToastService toastService, GamingComunication gamingComunication,
+        public GameAdmonViewModel(IToastService toastService, GameState gamingComunication,
             IConfiguration configuration)
         {
             this._toastService = toastService;
@@ -110,7 +110,7 @@ namespace WebUI.ViewModels
 
         public Task CreateNewGame()
         {
-            var addNewGameResult = this._gamingComunication.AddStandardGame(this.CurrentGame.Name, this.CurrentGame.GameType.Value);
+            var addNewGameResult = this._gamingComunication.AddGame(this.CurrentGame.Name, this.CurrentGame.GameType.Value);
             if(addNewGameResult.IsFailure)
             {
                 this._toastService.ShowError(addNewGameResult.Error);
@@ -231,7 +231,7 @@ namespace WebUI.ViewModels
 
         public Task AddBoardToPlayer(PlayerModel player)
         {
-            var addBoardToPlayerResult = this._gamingComunication.AddBoardToPlayer(this.CurrentGame.Name, player.Name);
+            var addBoardToPlayerResult = this._gamingComunication.AddBoardToPlayer(this.CurrentGame.Name, player.PlayerEntity);
             if(addBoardToPlayerResult.IsFailure)
             {
                 this._toastService.ShowError(addBoardToPlayerResult.Error);
@@ -246,7 +246,7 @@ namespace WebUI.ViewModels
 
         public Task RemoveBoardFromPlayer(PlayerModel player)
         {
-            var removeBoardFromPlayerResult = this._gamingComunication.RemoveBoardFromPlayer(this.CurrentGame.Name, player.Name);
+            var removeBoardFromPlayerResult = this._gamingComunication.RemoveBoardFromPlayer(this.CurrentGame.Name, player.PlayerEntity);
             if (removeBoardFromPlayerResult.IsFailure)
             {
                 this._toastService.ShowError(removeBoardFromPlayerResult.Error);
@@ -261,7 +261,7 @@ namespace WebUI.ViewModels
 
         public Task RemovePlayer(PlayerModel player)
         {
-            var removePlayerResult = this._gamingComunication.RemovePlayer(this.CurrentGame.Name, player.Name);
+            var removePlayerResult = this._gamingComunication.RemovePlayer(this.CurrentGame.Name, player.PlayerEntity);
             if (removePlayerResult.IsFailure)
             {
                 this._toastService.ShowError(removePlayerResult.Error);
@@ -324,7 +324,7 @@ namespace WebUI.ViewModels
 
         public async Task SetWinner(PlayerModel player)
         {
-            var setWinnerResult = await this._gamingComunication.SetWinner(this.CurrentGame.Name, player.Name);
+            var setWinnerResult = await this._gamingComunication.SetWinner(this.CurrentGame.Name, player.PlayerEntity);
             if (setWinnerResult.IsFailure)
             {
                 this._toastService.ShowError(setWinnerResult.Error);
@@ -357,7 +357,7 @@ namespace WebUI.ViewModels
                 .ToList()
                 .ForEach(testGameId => {
                     var gameType = gameTypes[testGameId % gameTypes.Length];
-                    var addNewGameResult = this._gamingComunication.AddStandardGame($"Game_{testGameId}", gameType);
+                    var addNewGameResult = this._gamingComunication.AddGame($"Game_{testGameId}", gameType);
                 });
 
             return Task.CompletedTask;

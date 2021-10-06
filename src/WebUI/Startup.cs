@@ -39,7 +39,7 @@ namespace WebUI
 
             services.AddSingleton<BingoHub>();
             services.AddSingleton<BingoSecurity>();
-            services.AddSingleton<GamingComunication>();
+            services.AddSingleton<GameState>();
 
             services.AddTransient<GameAdmonViewModel>();
             services.AddTransient<GamePlayerViewModel>();

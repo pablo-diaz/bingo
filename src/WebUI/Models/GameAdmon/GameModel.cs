@@ -35,12 +35,12 @@ namespace WebUI.Models.GameAdmon
         public static GameModel FromEntity(GameDTO entity) =>
             new GameModel { Name = entity.Name, 
                             GameType = entity.GameType,
-                            Players = entity.Players.Select(player => PlayerModel.FromEntity(player, entity.Winner.HasValue ? player == entity.Winner.Value : false)).ToList(),
+                            Players = entity.Players.Select(player => PlayerModel.FromEntity(player, entity.Winner.HasValue ? player == entity.Winner.GetValueOrThrow() : false)).ToList(),
                             GameEntity = entity,
                             State = entity.GameStatus switch {
                                 GameStatus.DRAFT => "Borrador [No Iniciado]",
                                 GameStatus.ACTIVE => "Iniciado [Jugando]",
-                                GameStatus.FINISHED => $"Finalizado [Ganador: {entity.Winner.Value.Name}]",
+                                GameStatus.FINISHED => $"Finalizado [Ganador: {entity.Winner.GetValueOrThrow().Name}]",
                                 _ => "Estado desconocido"
                             },
                             MasterBoard = BuildMasterBoardState(entity),
