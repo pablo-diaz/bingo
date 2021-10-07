@@ -6,7 +6,7 @@ using CSharpFunctionalExtensions;
 
 namespace Core
 {
-    public class DraftGame: Game
+    internal class DraftGame: Game
     {
         #region Constructors
 

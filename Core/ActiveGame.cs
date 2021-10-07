@@ -6,7 +6,7 @@ using CSharpFunctionalExtensions;
 
 namespace Core
 {
-    public class ActiveGame: Game
+    internal class ActiveGame: Game
     {
         #region Constructors
 
@@ -14,7 +14,8 @@ namespace Core
                 HashSet<Ball> withBalls, short withMaxNBallsPerColumn,
                 HashSet<Player> players) :
             base(name: name, gameType: gameType, balls: withBalls,
-                maxNBallsPerColumn: withMaxNBallsPerColumn, players: players)
+                maxNBallsPerColumn: withMaxNBallsPerColumn, players: players,
+                status: GameStatus.Playing)
         {
         }
 

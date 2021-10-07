@@ -5,12 +5,29 @@ using CSharpFunctionalExtensions;
 
 namespace Core
 {
+    public enum GameType
+    {
+        STANDARD,
+        T,
+        L,
+        O,
+        X
+    }
+
+    public enum GameStatus
+    {
+        Draft,
+        Playing,
+        Finished
+    }
+
     public abstract class Game
     {
         #region Properties
 
         public string Name { get; }
         public GameType GameType { get; }
+        public GameStatus Status { get; }
         public short MaxNBallsPerColumn { get; }
         public Maybe<Player> Winner { get; }
 
@@ -32,6 +49,7 @@ namespace Core
             _players = new HashSet<Player>();
             _ballsPlayed = new HashSet<Ball>();
             Winner = Maybe<Player>.None;
+            Status = GameStatus.Draft;
         }
 
         protected Game(string name, GameType gameType,
@@ -45,10 +63,11 @@ namespace Core
 
         protected Game(string name, GameType gameType,
             HashSet<Ball> balls, short maxNBallsPerColumn,
-            HashSet<Player> players) : this()
+            HashSet<Player> players, GameStatus status) : this()
         {
             Name = name;
             GameType = gameType;
+            Status = status;
             MaxNBallsPerColumn = maxNBallsPerColumn;
             _ballsConfigured = balls;
             _players = players;
@@ -57,10 +76,11 @@ namespace Core
         protected Game(string name, GameType gameType,
             HashSet<Ball> balls, short maxNBallsPerColumn,
             HashSet<Player> players, Player winner,
-            HashSet<Ball> ballsPlayed) : this()
+            HashSet<Ball> ballsPlayed, GameStatus status) : this()
         {
             Name = name;
             GameType = gameType;
+            Status = status;
             MaxNBallsPerColumn = maxNBallsPerColumn;
             _ballsConfigured = balls;
             _ballsPlayed = ballsPlayed;

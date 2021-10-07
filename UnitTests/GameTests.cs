@@ -17,6 +17,13 @@ namespace UnitTests
         #region New Game tests
 
         [Test]
+        public void WhenCreatingANewGame_ItsStatusShouldBeDraft()
+        {
+            (var game, var _, var _) = CreateDefaultGameWithPlayers();
+            game.Status.Should().Be(GameStatus.Draft);
+        }
+
+        [Test]
         public void WhenCreatingANewGame_AllPlayersShouldHaveAtLeastOneBoard()
         {
             (var _, var player1, var player2) = CreateDefaultGameWithPlayers();
@@ -422,7 +429,7 @@ namespace UnitTests
             startGameResult.IsSuccess.Should().BeTrue();
             
             startGameResult.Value.BallsPlayed.Should().BeEmpty();
-            startGameResult.Value.Should().BeOfType(typeof(ActiveGame));
+            startGameResult.Value.Status.Should().Be(GameStatus.Playing);
             startGameResult.Value.Winner.HasNoValue.Should().BeTrue();
         }
 
@@ -511,6 +518,7 @@ namespace UnitTests
 
             finishedGameResult.IsSuccess.Should().BeTrue();
             finishedGameResult.Value.Winner.Should().Be(chosenPlayerSetToWin);
+            finishedGameResult.Value.Status.Should().Be(GameStatus.Finished);
         }
 
         [Test]
@@ -521,6 +529,7 @@ namespace UnitTests
             var finishedGameResult = activeGame.SetWinner(otherPlayer);
 
             finishedGameResult.IsFailure.Should().BeTrue();
+            activeGame.Status.Should().Be(GameStatus.Playing);
         }
 
         [Test]
@@ -531,6 +540,7 @@ namespace UnitTests
             var finishedGameResult = activeGame.SetWinner(null);
 
             finishedGameResult.IsFailure.Should().BeTrue();
+            activeGame.Status.Should().Be(GameStatus.Playing);
         }
 
         [Test]
@@ -542,6 +552,7 @@ namespace UnitTests
             var finishedGameResult = activeGame.SetWinner(playerFromAnotherGame);
 
             finishedGameResult.IsFailure.Should().BeTrue();
+            activeGame.Status.Should().Be(GameStatus.Playing);
         }
 
         #endregion

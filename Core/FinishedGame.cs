@@ -4,7 +4,7 @@ using CSharpFunctionalExtensions;
 
 namespace Core
 {
-    public class FinishedGame: Game
+    internal class FinishedGame: Game
     {
         #region Constructors
 
@@ -15,7 +15,7 @@ namespace Core
             base(name: name, gameType: gameType, balls: balls,
                 maxNBallsPerColumn: maxNBallsPerColumn,
                 players: players, winner: withWinner,
-                ballsPlayed: withBallsPlayed)
+                ballsPlayed: withBallsPlayed, status: GameStatus.Finished)
         {
         }
 
