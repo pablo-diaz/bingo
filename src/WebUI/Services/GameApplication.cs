@@ -29,12 +29,14 @@ namespace WebUI.Services
 
         public Result AddGame(string name, GameType gameType)
         {
-            (var maybeGameFound, var _) = this.FindGame(name);
-            if (maybeGameFound.HasValue)
+            name = name.Trim();
+
+            var maybeGame = this._games.FirstOrDefault(game => game.Name == name);
+            if (maybeGame != null)
                 return Result.Failure("There is already a game with the same name. Please try with a different one");
 
             var draftGameResult = GameServices.CreateGame(
-                withName: name.Trim(), gameType: gameType,
+                withName: name, gameType: gameType,
                 withNBallsTotal: STANDARD_BALLS_VERSION_TOTAL,
                 withNBallsMaxPerColumn: STANDARD_BALLS_VERSION_PER_COLUMN_COUNT);
             if (draftGameResult.IsFailure)
@@ -45,170 +47,82 @@ namespace WebUI.Services
             return Result.Success();
         }
 
-        public Result<GameState> CopyPlayersFromGame(string fromGameName, string toGameName)
+        public Result CopyPlayersFromGame(GameState fromGame, GameState toGame)
         {
-            (var maybeSourceGame, var sourceGame) = this.FindGame(fromGameName);
-            if (maybeSourceGame.HasNoValue)
-                return Result.Failure<GameState>("Source Game has not been found by its name");
-
-            (var maybeTargetGame, var targetGame) = this.FindGame(toGameName);
-            if (maybeTargetGame.HasNoValue)
-                return Result.Failure<GameState>("Target Game has not been found by its name");
-
-            foreach (var sourcePlayer in sourceGame.Players.Except(targetGame.Players))
+            foreach (var sourcePlayer in fromGame.Players.Except(toGame.Players))
             {
-                var addPlayerResult = targetGame.AddPlayer(sourcePlayer.Name);
+                var addPlayerResult = toGame.AddPlayer(sourcePlayer.Name);
                 if (addPlayerResult.IsFailure)
                     return Result.Failure<GameState>(addPlayerResult.Error);
             }
 
-            return Result.Success(targetGame);
+            return Result.Success();
         }
 
-        public Result<GameState> AddNewPlayerToGame(string gameName, string playerName)
+        public Result AddNewPlayerToGame(GameState game, string playerName) =>
+            game.AddPlayer(playerName.Trim());
+
+        public Result UpdatePlayerInfoInGame(GameState game,
+                Player existingPlayer, string newPlayerName) =>
+            game.UpdatePlayer(existingPlayer, newPlayerName.Trim());
+
+        public Result AddBoardToPlayer(GameState inGame, Player toPlayer) =>
+            inGame.AddBoardToPlayer(toPlayer);
+
+        public Result RemoveBoardFromPlayer(GameState inGame, Player fromPlayer) =>
+            inGame.RemoveBoardFromPlayer(fromPlayer, fromPlayer.Boards.Last());
+
+        public Result RemovePlayer(GameState inGame, Player playerToRemove) =>
+            inGame.RemovePlayer(playerToRemove);
+
+        public Result StartGame(GameState game) =>
+            game.Start();
+
+        public async Task<Result> PlayBall(GameState inGame, string ballName)
         {
-            (var maybeGame, var game) = this.FindGame(gameName);
-            if (maybeGame.HasNoValue)
-                return Result.Failure<GameState>("Game has not been found by its name");
-
-            var addPlayerResult = game.AddPlayer(playerName.Trim());
-            if (addPlayerResult.IsFailure)
-                return Result.Failure<GameState>(addPlayerResult.Error);
-
-            return Result.Success(game);
-        }
-
-        public Result<GameState> UpdatePlayerInfoInGame(string gameName,
-            Player existingPlayer, string newPlayerName)
-        {
-            (var maybeGame, var game) = this.FindGame(gameName);
-            if (maybeGame.HasNoValue)
-                return Result.Failure<GameState>("Game has not been found by its name");
-
-            var updatePlayerResult = game.UpdatePlayer(existingPlayer, newPlayerName.Trim());
-            if (updatePlayerResult.IsFailure)
-                return Result.Failure<GameState>(updatePlayerResult.Error);
-
-            return Result.Success(game);
-        }
-
-        public Result<GameState> AddBoardToPlayer(string inGameName, Player toPlayer)
-        {
-            (var maybeGame, var game) = this.FindGame(inGameName);
-            if (maybeGame.HasNoValue)
-                return Result.Failure<GameState>("Game has not been found by its name");
-
-            var addBoardResult = game.AddBoardToPlayer(toPlayer);
-            if (addBoardResult.IsFailure)
-                return Result.Failure<GameState>(addBoardResult.Error);
-
-            return Result.Success(game);
-        }
-
-        public Result<GameState> RemoveBoardFromPlayer(string inGameName, Player fromPlayer)
-        {
-            (var maybeGame, var game) = this.FindGame(inGameName);
-            if (maybeGame.HasNoValue)
-                return Result.Failure<GameState>("Game has not been found by its name");
-
-            var lastBoardFound = fromPlayer.Boards.LastOrDefault();
-            if(lastBoardFound == null)
-                return Result.Failure<GameState>("Player does not have any boards left");
-
-            var removeBoardResult = game.RemoveBoardFromPlayer(fromPlayer, lastBoardFound);
-            if (removeBoardResult.IsFailure)
-                return Result.Failure<GameState>(removeBoardResult.Error);
-
-            return Result.Success(game);
-        }
-
-        public Result<GameState> RemovePlayer(string inGameName, Player playerToRemove)
-        {
-            (var maybeGame, var game) = this.FindGame(inGameName);
-            if (maybeGame.HasNoValue)
-                return Result.Failure<GameState>("Game has not been found by its name");
-
-            var removePlayerResult = game.RemovePlayer(playerToRemove);
-            if (removePlayerResult.IsFailure)
-                return Result.Failure<GameState>(removePlayerResult.Error);
-
-            return Result.Success(game);
-        }
-
-        public Result<GameState> StartGame(string gameName)
-        {
-            (var maybeGame, var game) = this.FindGame(gameName);
-            if (maybeGame.HasNoValue)
-                return Result.Failure<GameState>("Game has not been found by its name");
-
-            var gameStartResult = game.Start();
-            if(gameStartResult.IsFailure)
-                return Result.Failure<GameState>(gameStartResult.Error);
-
-            return Result.Success(game);
-        }
-
-        public async Task<Result<GameState>> PlayBall(string inGameName, string ballName)
-        {
-            (var maybeGame, var game) = this.FindGame(inGameName);
-            if (maybeGame.HasNoValue)
-                return Result.Failure<GameState>("Game has not been found by its name");
-
-            var maybeBall = game.FindBallConfigured(ballName);
+            var maybeBall = inGame.FindBallConfigured(ballName);
             if(maybeBall.HasNoValue)
-                return Result.Failure<GameState>("Ball has not been found by its name");
+                return Result.Failure("Ball has not been found by its name");
 
             var ball = maybeBall.GetValueOrThrow();
 
-            var playBallResult = game.PlayBall(ball);
+            var playBallResult = inGame.PlayBall(ball);
             if (playBallResult.IsFailure)
-                return Result.Failure<GameState>(playBallResult.Error);
+                return Result.Failure(playBallResult.Error);
 
-            await this._bingoHub.SendBallPlayedMessage(inGameName,
+            await this._bingoHub.SendBallPlayedMessage(inGame.Name,
                 new Infrastructure.DTOs.BallDTO { Name = ball.Name });
 
-            return Result.Success(game);
+            return Result.Success();
         }
 
-        public async Task<Result<GameState>> RandomlyPlayBall(string inGameName)
+        public async Task<Result> RandomlyPlayBall(GameState inGame)
         {
-            (var maybeGame, var game) = this.FindGame(inGameName);
-            if (maybeGame.HasNoValue)
-                return Result.Failure<GameState>("Game has not been found by its name");
-
-            var playBallResult = game.RadmonlyPlayBall();
+            var playBallResult = inGame.RadmonlyPlayBall();
             if (playBallResult.IsFailure)
-                return Result.Failure<GameState>(playBallResult.Error);
+                return Result.Failure(playBallResult.Error);
 
-            await this._bingoHub.SendBallPlayedMessage(inGameName,
+            await this._bingoHub.SendBallPlayedMessage(inGame.Name,
                 new Infrastructure.DTOs.BallDTO { Name = playBallResult.Value.Name });
 
-            return Result.Success(game);
+            return Result.Success();
         }
 
-        public async Task<Result<GameState>> SetWinner(string inGameName, Player winner)
+        public async Task<Result> SetWinner(GameState inGame, Player winner)
         {
-            (var maybeGame, var game) = this.FindGame(inGameName);
-            if (maybeGame.HasNoValue)
-                return Result.Failure<GameState>("Game has not been found by its name");
-
-            var settingWinnerResult = game.SetWinner(winner);
+            var settingWinnerResult = inGame.SetWinner(winner);
             if (settingWinnerResult.IsFailure)
-                return Result.Failure<GameState>(settingWinnerResult.Error);
+                return Result.Failure(settingWinnerResult.Error);
 
-            await this._bingoHub.SendWinnerMessage(inGameName, winner.Name);
+            await this._bingoHub.SendWinnerMessage(inGame.Name, winner.Name);
 
-            return Result.Success(game);
+            return Result.Success();
         }
 
-        public Result<LoginResultDTO> PerformLogIn(string inGameName, Player forPlayer)
+        public Result<LoginResultDTO> PerformLogIn(GameState inGame, Player forPlayer)
         {
-            (var maybeGame, var game) = this.FindGame(inGameName);
-            if (maybeGame.HasNoValue)
-                return Result.Failure<LoginResultDTO>("Game has not been found by its name");
-
-            var jwtPlayerToken = this._bingoSecurity.CreateJWTTokenForPlayer(inGameName);
-            var loginResult = new LoginResultDTO(forPlayer, game.BallsPlayed, jwtPlayerToken);
+            var jwtPlayerToken = this._bingoSecurity.CreateJWTTokenForPlayer(inGame.Name);
+            var loginResult = new LoginResultDTO(forPlayer, inGame.BallsPlayed, jwtPlayerToken);
             return Result.Success(loginResult);
         }
 
@@ -225,23 +139,15 @@ namespace WebUI.Services
                 .ToList()
                 .AsReadOnly();
 
-        public Result DeleteGame(string gameName)
+        public Result DeleteGame(GameState game)
         {
-            var gameIndexFound = this._games.FindIndex(g => g.Name == gameName.Trim());
+            var gameIndexFound = this._games.FindIndex(g => g == game);
             if (gameIndexFound <= -1)
                 return Result.Failure<GameState>("Game has not been found by its name");
 
             this._games.RemoveAt(gameIndexFound);
 
             return Result.Success();
-        }
-
-        private (Maybe<GameState> maybeGame, GameState game) FindGame(string withName)
-        {
-            var maybeGame = this._games.FirstOrDefault(game => game.Name == withName.Trim());
-            return maybeGame != null
-                ? (Maybe<GameState>.From(maybeGame), maybeGame)
-                : (Maybe<GameState>.None, null);
         }
     }
 }

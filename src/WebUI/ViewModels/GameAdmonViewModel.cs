@@ -30,7 +30,7 @@ namespace WebUI.ViewModels
         }
 
         private readonly IToastService _toastService;
-        private readonly GameApplication _gamingComunication;
+        private readonly GameApplication _gameApplication;
         private readonly IConfiguration _configuration;
         private State _currentState;
 
@@ -38,12 +38,12 @@ namespace WebUI.ViewModels
         public GameModel CurrentGame { get; set; }
         public PlayerModel PlayerModel { get; set; }
         public List<GameModel> OtherGames =>
-            this._gamingComunication.GetAllGames()
+            this._gameApplication.GetAllGames()
                 .Where(game => game.Name != this.CurrentGame.Name)
                 .Select(game => GameModel.FromEntity(game))
                 .ToList();
 
-        public List<GameModel> Games => this._gamingComunication.GetAllGames()
+        public List<GameModel> Games => this._gameApplication.GetAllGames()
             .Select(game => GameModel.FromEntity(game))
             .ToList();
 
@@ -62,7 +62,7 @@ namespace WebUI.ViewModels
             IConfiguration configuration)
         {
             this._toastService = toastService;
-            this._gamingComunication = gamingComunication;
+            this._gameApplication = gamingComunication;
             this._configuration = configuration;
         }
 
@@ -110,7 +110,7 @@ namespace WebUI.ViewModels
 
         public Task CreateNewGame()
         {
-            var addNewGameResult = this._gamingComunication.AddGame(this.CurrentGame.Name, this.CurrentGame.GameType.Value);
+            var addNewGameResult = this._gameApplication.AddGame(this.CurrentGame.Name, this.CurrentGame.GameType.Value);
             if(addNewGameResult.IsFailure)
             {
                 this._toastService.ShowError(addNewGameResult.Error);
@@ -147,7 +147,7 @@ namespace WebUI.ViewModels
 
         public void CopyPlayersFromGame(GameModel sourceGame)
         {
-            var copyPlayersResult = this._gamingComunication.CopyPlayersFromGame(sourceGame.Name, this.CurrentGame.Name);
+            var copyPlayersResult = this._gameApplication.CopyPlayersFromGame(sourceGame.GameEntity, this.CurrentGame.GameEntity);
             if (copyPlayersResult.IsFailure)
             {
                 this._toastService.ShowError(copyPlayersResult.Error);
@@ -156,7 +156,7 @@ namespace WebUI.ViewModels
 
             this._toastService.ShowSuccess($"Se han copiado los jugadores exitosamente");
 
-            TransitionToEditGame(GameModel.FromEntity(copyPlayersResult.Value));
+            TransitionToEditGame(GameModel.FromEntity(this.CurrentGame.GameEntity));
         }
 
         public Task CancelCopyPlayersFromGame()
@@ -176,25 +176,26 @@ namespace WebUI.ViewModels
 
         public Task SavePlayerInfo()
         {
-            GameState game = null;
-
             if(this._currentState == State.CREATING_PLAYER)
             {
-                var newPlayerResult = this._gamingComunication.AddNewPlayerToGame(
-                    this.CurrentGame.Name, this.PlayerModel.Name);
+                var newPlayerResult = this._gameApplication.AddNewPlayerToGame(
+                    this.CurrentGame.GameEntity, this.PlayerModel.Name);
                 if(newPlayerResult.IsFailure)
                 {
                     this._toastService.ShowError(newPlayerResult.Error);
                     return Task.CompletedTask;
                 }
 
-                game = newPlayerResult.Value;
                 this._toastService.ShowSuccess("El jugador se ha creado exitosamente");
+
+                this.TransitionToEditGame(GameModel.FromEntity(this.CurrentGame.GameEntity));
+                return Task.CompletedTask;
             }
-            else if(this._currentState == State.EDITING_PLAYER)
+
+            if(this._currentState == State.EDITING_PLAYER)
             {
-                var updatePlayerResult = this._gamingComunication.UpdatePlayerInfoInGame(
-                    this.CurrentGame.Name, this.PlayerModel.PlayerEntity, this.PlayerModel.Name);
+                var updatePlayerResult = this._gameApplication.UpdatePlayerInfoInGame(
+                    this.CurrentGame.GameEntity, this.PlayerModel.PlayerEntity, this.PlayerModel.Name);
 
                 if (updatePlayerResult.IsFailure)
                 {
@@ -202,16 +203,13 @@ namespace WebUI.ViewModels
                     return Task.CompletedTask;
                 }
 
-                game = updatePlayerResult.Value;
                 this._toastService.ShowSuccess("El jugador se ha actualizado exitosamente");
-            }
-            else
-            {
-                this._toastService.ShowError("Game is in weird state :(");
+
+                this.TransitionToEditGame(GameModel.FromEntity(this.CurrentGame.GameEntity));
                 return Task.CompletedTask;
             }
-
-            this.TransitionToEditGame(GameModel.FromEntity(game));
+            
+            this._toastService.ShowError("Game is in weird state :(");
             return Task.CompletedTask;
         }
 
@@ -231,7 +229,8 @@ namespace WebUI.ViewModels
 
         public Task AddBoardToPlayer(PlayerModel player)
         {
-            var addBoardToPlayerResult = this._gamingComunication.AddBoardToPlayer(this.CurrentGame.Name, player.PlayerEntity);
+            var addBoardToPlayerResult = this._gameApplication.AddBoardToPlayer(
+                this.CurrentGame.GameEntity, player.PlayerEntity);
             if(addBoardToPlayerResult.IsFailure)
             {
                 this._toastService.ShowError(addBoardToPlayerResult.Error);
@@ -240,13 +239,14 @@ namespace WebUI.ViewModels
 
             this._toastService.ShowSuccess($"Una tabla más ha sido exitosamente agregada a {player.Name}");
 
-            this.TransitionToEditGame(GameModel.FromEntity(addBoardToPlayerResult.Value));
+            this.TransitionToEditGame(GameModel.FromEntity(this.CurrentGame.GameEntity));
             return Task.CompletedTask;
         }
 
         public Task RemoveBoardFromPlayer(PlayerModel player)
         {
-            var removeBoardFromPlayerResult = this._gamingComunication.RemoveBoardFromPlayer(this.CurrentGame.Name, player.PlayerEntity);
+            var removeBoardFromPlayerResult = this._gameApplication.RemoveBoardFromPlayer(
+                this.CurrentGame.GameEntity, player.PlayerEntity);
             if (removeBoardFromPlayerResult.IsFailure)
             {
                 this._toastService.ShowError(removeBoardFromPlayerResult.Error);
@@ -255,13 +255,14 @@ namespace WebUI.ViewModels
 
             this._toastService.ShowSuccess($"Se ha removido una tabla del jugador {player.Name}");
 
-            this.TransitionToEditGame(GameModel.FromEntity(removeBoardFromPlayerResult.Value));
+            this.TransitionToEditGame(GameModel.FromEntity(this.CurrentGame.GameEntity));
             return Task.CompletedTask;
         }
 
         public Task RemovePlayer(PlayerModel player)
         {
-            var removePlayerResult = this._gamingComunication.RemovePlayer(this.CurrentGame.Name, player.PlayerEntity);
+            var removePlayerResult = this._gameApplication.RemovePlayer(
+                this.CurrentGame.GameEntity, player.PlayerEntity);
             if (removePlayerResult.IsFailure)
             {
                 this._toastService.ShowError(removePlayerResult.Error);
@@ -270,13 +271,13 @@ namespace WebUI.ViewModels
 
             this._toastService.ShowSuccess($"Se ha eliminado el jugador {player.Name}");
 
-            this.TransitionToEditGame(GameModel.FromEntity(removePlayerResult.Value));
+            this.TransitionToEditGame(GameModel.FromEntity(this.CurrentGame.GameEntity));
             return Task.CompletedTask;
         }
 
         public Task StartGame()
         {
-            var startGameResult = this._gamingComunication.StartGame(this.CurrentGame.Name);
+            var startGameResult = this._gameApplication.StartGame(this.CurrentGame.GameEntity);
             if(startGameResult.IsFailure)
             {
                 this._toastService.ShowError(startGameResult.Error);
@@ -285,23 +286,25 @@ namespace WebUI.ViewModels
 
             this._toastService.ShowSuccess("El juego ha empezado");
 
-            this.TransitionToEditGame(GameModel.FromEntity(startGameResult.Value));
+            this.TransitionToEditGame(GameModel.FromEntity(this.CurrentGame.GameEntity));
             return Task.CompletedTask;
         }
 
         public async Task PlayBall(BallModel ball)
         {
-            var playBallResult = await this._gamingComunication.PlayBall(this.CurrentGame.Name, ball.Entity.Name);
-            HandleBallPlayedResult(playBallResult);
+            var playBallResult = await this._gameApplication.PlayBall(
+                this.CurrentGame.GameEntity, ball.Entity.Name);
+
+            HandleBallPlayedResult(playBallResult, this.CurrentGame.GameEntity);
         }
 
         public async Task PlayBallRandomly()
         {
-            var playBallResult = await this._gamingComunication.RandomlyPlayBall(this.CurrentGame.Name);
-            HandleBallPlayedResult(playBallResult);
+            var playBallResult = await this._gameApplication.RandomlyPlayBall(this.CurrentGame.GameEntity);
+            HandleBallPlayedResult(playBallResult, this.CurrentGame.GameEntity);
         }
 
-        private void HandleBallPlayedResult(Result<GameState> playBallResult)
+        private void HandleBallPlayedResult(Result playBallResult, GameState game)
         {
             if (playBallResult.IsFailure)
             {
@@ -309,7 +312,7 @@ namespace WebUI.ViewModels
                 return;
             }
 
-            var potentialWinners = playBallResult.Value.Players
+            var potentialWinners = game.Players
                 .Where(player => player.Boards.Any(board => board.State == BoardState.Winner))
                 .Select(player => player.Name)
                 .ToList();
@@ -319,12 +322,13 @@ namespace WebUI.ViewModels
 
             this._toastService.ShowSuccess("Bola ha sido jugada exitosamente");
 
-            this.TransitionToEditGame(GameModel.FromEntity(playBallResult.Value));
+            this.TransitionToEditGame(GameModel.FromEntity(game));
         }
 
         public async Task SetWinner(PlayerModel player)
         {
-            var setWinnerResult = await this._gamingComunication.SetWinner(this.CurrentGame.Name, player.PlayerEntity);
+            var setWinnerResult = await this._gameApplication.SetWinner(
+                this.CurrentGame.GameEntity, player.PlayerEntity);
             if (setWinnerResult.IsFailure)
             {
                 this._toastService.ShowError(setWinnerResult.Error);
@@ -333,12 +337,12 @@ namespace WebUI.ViewModels
 
             this._toastService.ShowSuccess($"Se ha establecido a {player.Name} como el Ganador del juego");
 
-            await this.TransitionToEditGame(GameModel.FromEntity(setWinnerResult.Value));
+            await this.TransitionToEditGame(GameModel.FromEntity(this.CurrentGame.GameEntity));
         }
 
         public void DeleteGame(GameModel game)
         {
-            var deleteGameResult = this._gamingComunication.DeleteGame(game.Name);
+            var deleteGameResult = this._gameApplication.DeleteGame(game.GameEntity);
             if (deleteGameResult.IsFailure)
             {
                 this._toastService.ShowError(deleteGameResult.Error);
@@ -357,7 +361,7 @@ namespace WebUI.ViewModels
                 .ToList()
                 .ForEach(testGameId => {
                     var gameType = gameTypes[testGameId % gameTypes.Length];
-                    var addNewGameResult = this._gamingComunication.AddGame($"Game_{testGameId}", gameType);
+                    var addNewGameResult = this._gameApplication.AddGame($"Game_{testGameId}", gameType);
                 });
 
             return Task.CompletedTask;
@@ -365,16 +369,14 @@ namespace WebUI.ViewModels
 
         public Task AddTestPlayers()
         {
-            GameState gameInContext = null;
             Enumerable.Range(1, 7)
                 .ToList()
                 .ForEach(testPlayerNumber => {
-                    var newPlayerResult = this._gamingComunication.AddNewPlayerToGame(
-                        this.CurrentGame.Name, $"Name_{testPlayerNumber}");
-                    gameInContext = newPlayerResult.Value;
+                    var newPlayerResult = this._gameApplication.AddNewPlayerToGame(
+                        this.CurrentGame.GameEntity, $"Name_{testPlayerNumber}");
                 });
 
-            this.TransitionToEditGame(GameModel.FromEntity(gameInContext));
+            this.TransitionToEditGame(GameModel.FromEntity(this.CurrentGame.GameEntity));
 
             return Task.CompletedTask;
         }

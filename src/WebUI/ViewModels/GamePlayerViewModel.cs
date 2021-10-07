@@ -36,6 +36,7 @@ namespace WebUI.ViewModels
             this._gamingComunication.GetPlayableGames()
                 .Select(game => GameModel.FromEntity(game))
                 .ToList();
+
         public GameModel GameSelected { get; set; }
         public PlayerModel PlayerModel { get; set; }
         public List<BallDTO> PlayedBalls { get; private set; }
@@ -77,7 +78,8 @@ namespace WebUI.ViewModels
 
         public async Task SelectPlayer(PlayerModel player)
         {
-            var loginResult = this._gamingComunication.PerformLogIn(this.GameSelected.Name, player.PlayerEntity);
+            var loginResult = this._gamingComunication.PerformLogIn(
+                this.GameSelected.GameEntity, player.PlayerEntity);
             if(loginResult.IsFailure)
             {
                 this._toastService.ShowError(loginResult.Error);
