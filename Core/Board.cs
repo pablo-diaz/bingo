@@ -212,34 +212,4 @@ namespace Core
 
         #endregion
     }
-
-    internal static class BallSetExtensions
-    {
-        public static List<Ball> RandomlyRemoveBallsUntilDesiredCount(this List<Ball> from, 
-            int desiredCount)
-        {
-            if (from.Count == desiredCount)
-                return from;
-
-            var randomIndex = RandomizingUtilities.GetRandomValue(from.Count);
-            from.RemoveAt(randomIndex);
-            return from.RandomlyRemoveBallsUntilDesiredCount(desiredCount);
-        }
-
-        public static HashSet<Ball> AdjustBallsToDesiredCount(this HashSet<Ball> balls,
-            Dictionary<BallLeter, int> desiredCountPerColumn)
-        {
-            var fullBallSet = new List<Ball>();
-            foreach (var kvp in desiredCountPerColumn)
-            {
-                var set = balls.Where(ball => ball.Letter == kvp.Key)
-                               .ToList()
-                               .RandomlyRemoveBallsUntilDesiredCount(desiredCount: kvp.Value);
-
-                fullBallSet.AddRange(set);
-            }
-
-            return new HashSet<Ball>(fullBallSet);
-        }
-    }
 }
