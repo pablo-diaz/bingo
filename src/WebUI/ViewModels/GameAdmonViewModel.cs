@@ -30,7 +30,7 @@ namespace WebUI.ViewModels
         }
 
         private readonly IToastService _toastService;
-        private readonly GameState _gamingComunication;
+        private readonly GameApplication _gamingComunication;
         private readonly IConfiguration _configuration;
         private State _currentState;
 
@@ -58,7 +58,7 @@ namespace WebUI.ViewModels
 
         public bool IsThereAWinnerAlready => this.CurrentGame.GameEntity.Winner.HasValue;
 
-        public GameAdmonViewModel(IToastService toastService, GameState gamingComunication,
+        public GameAdmonViewModel(IToastService toastService, GameApplication gamingComunication,
             IConfiguration configuration)
         {
             this._toastService = toastService;
@@ -176,7 +176,7 @@ namespace WebUI.ViewModels
 
         public Task SavePlayerInfo()
         {
-            GameDTO game = null;
+            GameState game = null;
 
             if(this._currentState == State.CREATING_PLAYER)
             {
@@ -301,7 +301,7 @@ namespace WebUI.ViewModels
             HandleBallPlayedResult(playBallResult);
         }
 
-        private void HandleBallPlayedResult(Result<GameDTO> playBallResult)
+        private void HandleBallPlayedResult(Result<GameState> playBallResult)
         {
             if (playBallResult.IsFailure)
             {
@@ -365,7 +365,7 @@ namespace WebUI.ViewModels
 
         public Task AddTestPlayers()
         {
-            GameDTO gameInContext = null;
+            GameState gameInContext = null;
             Enumerable.Range(1, 7)
                 .ToList()
                 .ForEach(testPlayerNumber => {

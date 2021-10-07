@@ -22,7 +22,7 @@ namespace WebUI.Models.GameAdmon
 
         public string State { get; set; }
 
-        public bool IsItADraftGame { get => GameEntity.GameStatus == GameStatus.DRAFT; }
+        public bool IsItADraftGame { get => GameEntity.GameStatus == GameStatus.Draft; }
 
         public List<PlayerModel> Players { get; set; }
 
@@ -30,17 +30,17 @@ namespace WebUI.Models.GameAdmon
 
         public List<BallModel> BallsPlayed { get; set; }
 
-        public GameDTO GameEntity { get; set; }
+        public GameState GameEntity { get; set; }
 
-        public static GameModel FromEntity(GameDTO entity) =>
+        public static GameModel FromEntity(GameState entity) =>
             new GameModel { Name = entity.Name, 
                             GameType = entity.GameType,
                             Players = entity.Players.Select(player => PlayerModel.FromEntity(player, entity.Winner.HasValue ? player == entity.Winner.GetValueOrThrow() : false)).ToList(),
                             GameEntity = entity,
                             State = entity.GameStatus switch {
-                                GameStatus.DRAFT => "Borrador [No Iniciado]",
-                                GameStatus.ACTIVE => "Iniciado [Jugando]",
-                                GameStatus.FINISHED => $"Finalizado [Ganador: {entity.Winner.GetValueOrThrow().Name}]",
+                                GameStatus.Draft => "Borrador [No Iniciado]",
+                                GameStatus.Playing => "Iniciado [Jugando]",
+                                GameStatus.Finished => $"Finalizado [Ganador: {entity.Winner.GetValueOrThrow().Name}]",
                                 _ => "Estado desconocido"
                             },
                             MasterBoard = BuildMasterBoardState(entity),
@@ -51,7 +51,7 @@ namespace WebUI.Models.GameAdmon
                                                             .ToList()
             };
 
-        private static Dictionary<string, List<BallModel>> BuildMasterBoardState(GameDTO game) =>
+        private static Dictionary<string, List<BallModel>> BuildMasterBoardState(GameState game) =>
             new Dictionary<string, List<BallModel>>() {
                 { "B", GetBallsByLetter(game, BallLeter.B) },
                 { "I", GetBallsByLetter(game, BallLeter.I) },
@@ -60,7 +60,7 @@ namespace WebUI.Models.GameAdmon
                 { "O", GetBallsByLetter(game, BallLeter.O) }
             };
 
-        private static List<BallModel> GetBallsByLetter(GameDTO game, BallLeter letter) =>
+        private static List<BallModel> GetBallsByLetter(GameState game, BallLeter letter) =>
             game.BallsConfigured.Where(ball => ball.Letter == letter)
                 .Select(ball => new BallModel { 
                     Letter = ball.Letter.ToString(), 

@@ -118,6 +118,7 @@ namespace Core
             var randomBall = balls[randomIndex];
             balls.RemoveAt(randomIndex);
             randomizedList.Add(randomBall);
+
             return Randomize(balls, expectedCount, randomizedList);
         }
 

@@ -13,7 +13,7 @@ namespace WebUI.Models.GamePlayer
 
         public List<PlayerModel> Players { get; set; }
 
-        public static GameModel FromEntity(GameDTO entity) =>
+        public static GameModel FromEntity(GameState entity) =>
             new GameModel {
                 Name = entity.Name,
                 GameType = entity.GameType,

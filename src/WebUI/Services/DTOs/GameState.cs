@@ -8,18 +8,11 @@ using CSharpFunctionalExtensions;
 
 namespace WebUI.Services.DTOs
 {
-    public enum GameStatus
-    {
-        DRAFT,
-        ACTIVE,
-        FINISHED
-    }
-
-    public class GameDTO
+    public class GameState
     {
         private Game _game;
-        
-        public GameStatus GameStatus { get; private set; } = GameStatus.DRAFT;
+
+        public GameStatus GameStatus => this._game.Status;
 
         public string Name => this._game.Name;
 
@@ -33,15 +26,14 @@ namespace WebUI.Services.DTOs
 
         public IReadOnlyCollection<Player> Players => this._game.Players;
 
-        public bool IsItPlayable => this.GameStatus == GameStatus.ACTIVE;
+        public bool IsItPlayable => this.GameStatus == GameStatus.Playing;
 
-        private GameDTO(Game game)
+        private GameState(Game game)
         {
-            this.GameStatus = GameStatus.DRAFT;
             this._game = game;
         }
 
-        internal static GameDTO CreateFromGame(Game game) => new GameDTO(game);
+        internal static GameState CreateFromGame(Game game) => new GameState(game);
 
         internal Result AddPlayer(string withName) => this._game.AddPlayer(withName);
 
@@ -62,7 +54,6 @@ namespace WebUI.Services.DTOs
                 return startResult;
 
             this._game = startResult.Value;
-            this.GameStatus = GameStatus.ACTIVE;
 
             return Result.Success();
         }
@@ -82,7 +73,6 @@ namespace WebUI.Services.DTOs
                 return setWinnerResult;
 
             this._game = setWinnerResult.Value;
-            this.GameStatus = GameStatus.FINISHED;
 
             return Result.Success();
         }

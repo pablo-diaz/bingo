@@ -25,7 +25,7 @@ namespace WebUI.ViewModels
         }
 
         private readonly IToastService _toastService;
-        private readonly GameState _gamingComunication;
+        private readonly GameApplication _gamingComunication;
         private readonly NavigationManager _navigationManager;
         private readonly IConfiguration _configuration;
         private State _currentState;
@@ -44,7 +44,7 @@ namespace WebUI.ViewModels
         public bool CanSelectPlayerInGameSectionBeShown => this._currentState == State.SELECTING_PLAYER;
         public bool CanPlayerSelectedSectionBeShown => this._currentState == State.PLAYER_SELECTED;
 
-        public GamePlayerViewModel(IToastService toastService, GameState gamingComunication,
+        public GamePlayerViewModel(IToastService toastService, GameApplication gamingComunication,
             NavigationManager navigationManager, IConfiguration configuration)
         {
             this._toastService = toastService;
