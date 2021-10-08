@@ -11,20 +11,25 @@ namespace WebUI.Models.GameAdmon
         [StringLength(100, ErrorMessage = "El nombre es muy largo. Intenta con uno más corto")]
         public string Name { get; set; }
 
-        public int BoardsCount { get; set; }
+        public int BoardsCount => PlayerEntity.Boards.Count;
 
-        public int WinningBoardCount { get; set; }
+        public int WinningBoardCount => PlayerEntity.Boards.Count(board => board.State == BoardState.Winner);
 
-        public bool IsTheWinner { get; set; }
+        public bool IsTheWinner { get; }
 
-        public Player PlayerEntity { get; set; }
+        public Player PlayerEntity { get; }
+
+        private PlayerModel(string name, Player entity, bool isTheWinner)
+        {
+            this.Name = name;
+            this.PlayerEntity = entity;
+            this.IsTheWinner = isTheWinner;
+        }
+
+        public static PlayerModel CreateAsEmptyForNewPlayer() =>
+            new PlayerModel(null, null, false);
 
         public static PlayerModel FromEntity(Player entity, bool isTheWinner) =>
-            new PlayerModel { Name = entity.Name, 
-                              BoardsCount = entity.Boards.Count,
-                              PlayerEntity = entity,
-                              WinningBoardCount = entity.Boards.Count(board => board.State == BoardState.Winner),
-                              IsTheWinner = isTheWinner
-            };
+            new PlayerModel(entity.Name, entity, isTheWinner);
     }
 }

@@ -18,38 +18,55 @@ namespace WebUI.Models.GameAdmon
         [Required(ErrorMessage = "Por favor selecciona el tipo de juego")]
         public GameType? GameType { get; set; }
 
-        public int PlayerCount { get => Players.Count; }
+        public int PlayerCount => Players.Count;
 
-        public string State { get; set; }
+        public string State => GameEntity.GameStatus switch {
+            GameStatus.Draft => "Borrador [No Iniciado]",
+            GameStatus.Playing => "Iniciado [Jugando]",
+            GameStatus.Finished => $"Finalizado [Ganador: {GameEntity.Winner.GetValueOrThrow().Name}]",
+            _ => "Estado desconocido"
+        };
 
-        public bool IsItADraftGame { get => GameEntity.GameStatus == GameStatus.Draft; }
+        public bool IsItADraftGame => GameEntity != null
+                                      ? GameEntity.GameStatus == GameStatus.Draft
+                                      : true;
 
-        public List<PlayerModel> Players { get; set; }
+        public List<PlayerModel> Players => GameEntity != null
+                                            ? GameEntity.Players
+                                                .Select(player => PlayerModel.FromEntity(player,
+                                                                    isTheWinner: GameEntity.Winner.HasValue
+                                                                                 ? player == GameEntity.Winner.GetValueOrThrow()
+                                                                                 : false))
+                                                .ToList()
+                                            : new List<PlayerModel>();
 
-        public Dictionary<string, List<BallModel>> MasterBoard { get; set; }
+        public Dictionary<string, List<BallModel>> MasterBoard => GameEntity != null
+                                                                  ? BuildMasterBoardState(GameEntity)
+                                                                  : new Dictionary<string, List<BallModel>>();
 
-        public List<BallModel> BallsPlayed { get; set; }
+        public List<BallModel> BallsPlayed => GameEntity != null
+                                              ? GameEntity.BallsPlayed.Select(ball => new BallModel {
+                                                                               Letter = ball.Letter.ToString(),
+                                                                               Number = ball.Number,
+                                                                               Entity = ball
+                                                                             })
+                                                                      .ToList()
+                                              : new List<BallModel>();
 
-        public GameState GameEntity { get; set; }
+        public GameState GameEntity { get; }
+
+        private GameModel(string name, GameType? gameType, GameState entity)
+        {
+            this.Name = name;
+            this.GameType = gameType;
+            this.GameEntity = entity;
+        }
+
+        public static GameModel CreateAsEmptyForNewGame() =>
+            new GameModel(null, null, null);
 
         public static GameModel FromEntity(GameState entity) =>
-            new GameModel { Name = entity.Name, 
-                            GameType = entity.GameType,
-                            Players = entity.Players.Select(player => PlayerModel.FromEntity(player, entity.Winner.HasValue ? player == entity.Winner.GetValueOrThrow() : false)).ToList(),
-                            GameEntity = entity,
-                            State = entity.GameStatus switch {
-                                GameStatus.Draft => "Borrador [No Iniciado]",
-                                GameStatus.Playing => "Iniciado [Jugando]",
-                                GameStatus.Finished => $"Finalizado [Ganador: {entity.Winner.GetValueOrThrow().Name}]",
-                                _ => "Estado desconocido"
-                            },
-                            MasterBoard = BuildMasterBoardState(entity),
-                            BallsPlayed = entity.BallsPlayed.Select(ball => new BallModel { 
-                                                                    Letter = ball.Letter.ToString(), 
-                                                                    Number = ball.Number, 
-                                                                    Entity = ball })
-                                                            .ToList()
-            };
+            new GameModel(entity.Name, entity.GameType, entity);
 
         private static Dictionary<string, List<BallModel>> BuildMasterBoardState(GameState game) =>
             new Dictionary<string, List<BallModel>>() {

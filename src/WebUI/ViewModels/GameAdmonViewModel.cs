@@ -37,15 +37,17 @@ namespace WebUI.ViewModels
         public AdminLoginModel AdminLoginModel { get; set; }
         public GameModel CurrentGame { get; set; }
         public PlayerModel PlayerModel { get; set; }
+
         public List<GameModel> OtherGames =>
             this._gameApplication.GetAllGames()
                 .Where(game => game.Name != this.CurrentGame.Name)
                 .Select(game => GameModel.FromEntity(game))
                 .ToList();
 
-        public List<GameModel> Games => this._gameApplication.GetAllGames()
-            .Select(game => GameModel.FromEntity(game))
-            .ToList();
+        public List<GameModel> Games =>
+            this._gameApplication.GetAllGames()
+                                 .Select(game => GameModel.FromEntity(game))
+                                 .ToList();
 
         public bool CanAuthenticatingAdminSectionBeShown => this._currentState == State.AUTHENTICATING_ADMIN;
         public bool CanLandingBeShown => this._currentState == State.BROWSING;
@@ -90,7 +92,7 @@ namespace WebUI.ViewModels
         public Task TransitionToNewGame()
         {
             this._currentState = State.CREATING_GAME;
-            this.CurrentGame = new GameModel();
+            this.CurrentGame = GameModel.CreateAsEmptyForNewGame();
             return Task.CompletedTask;
         }
 
@@ -169,7 +171,7 @@ namespace WebUI.ViewModels
         public Task TransitionToNewPlayer()
         {
             this._currentState = State.CREATING_PLAYER;
-            this.PlayerModel = new PlayerModel();
+            this.PlayerModel = PlayerModel.CreateAsEmptyForNewPlayer();
 
             return Task.CompletedTask;
         }
