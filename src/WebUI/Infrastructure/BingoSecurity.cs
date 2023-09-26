@@ -48,7 +48,7 @@ namespace WebUI.Infrastructure
 
         private SigningCredentials BuildSigningCredentials()
         {
-            var signingKey = this._configuration["Bingo.Security:JWTSigningKey"];
+            var signingKey = this._configuration["BingoSecurity:JWTSigningKey"];
             var bytes = Encoding.UTF8.GetBytes(signingKey);
             var key = new SymmetricSecurityKey(bytes);
             return new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

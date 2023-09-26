@@ -55,7 +55,7 @@ namespace WebUI
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(options => {
-                var signingKey = this.Configuration["Bingo.Security:JWTSigningKey"];
+                var signingKey = this.Configuration["BingoSecurity:JWTSigningKey"];
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -100,7 +100,7 @@ namespace WebUI
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();

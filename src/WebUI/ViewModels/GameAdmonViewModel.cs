@@ -56,7 +56,7 @@ namespace WebUI.ViewModels
         public bool CanNewPlayerSectionBeShown => this._currentState == State.CREATING_PLAYER;
         public bool CanEditPlayerSectionBeShown => this._currentState == State.EDITING_PLAYER;
         public bool CanCopyPlayersFromOtherGameSectionBeShown => this._currentState == State.COPYING_PLAYERS_FROM_OTHER_GAME;
-        public bool IsItInDevMode => Convert.ToBoolean(this._configuration["Bingo.Security:DevMode"]);
+        public bool IsItInDevMode => Convert.ToBoolean(this._configuration["BingoSecurity:DevMode"]);
 
         public bool IsThereAWinnerAlready => this.CurrentGame.GameEntity.Winner.HasValue;
 
@@ -98,7 +98,7 @@ namespace WebUI.ViewModels
 
         public Task AuthenticateAdmin()
         {
-            var adminPassword = this._configuration["Bingo.Security:AdminPassword"];
+            var adminPassword = this._configuration["BingoSecurity:AdminPassword"];
             if(adminPassword != this.AdminLoginModel.Passwd.Trim())
             {
                 this._toastService.ShowError("Contraseña equivocada. Intenta nuevamente");

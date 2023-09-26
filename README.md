@@ -10,8 +10,4 @@
 
 ## Deployment specs
 
-When deploying this to any IIS-with-dotnet-core-3.1 enabled http service, please make sure to:
-- Set the right password for the Admin
-- Set the right *webroot* folder
-  - Leave this empty, if you are publishing to an Azure WebSite
-  - If you are publishing to an IIS WebSite, under a specific WebApplication, then set this to that WebApplication's name
+When deploying this to any IIS-with-dotnet-core-3.1 enabled http service, please make sure to set the right environment variables

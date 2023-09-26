@@ -99,10 +99,8 @@ namespace WebUI.ViewModels
             if (this._bingoHubConnection != null)
                 await this.DisconnectFromServer();
 
-            var specificWebRootFolder = this._configuration["Bingo.Security:SpecificWebRootFolder"];
-            var serverURI = this._navigationManager.ToAbsoluteUri($"{specificWebRootFolder}/bingoHub");
             this._bingoHubConnection = new HubConnectionBuilder()
-                .WithUrl(serverURI, options => {
+                .WithUrl($"{this._configuration["BingoSecurity:WebSocketPublicUrl"]}/bingoHub", options => {
                     options.AccessTokenProvider = () => Task.FromResult(jwtPlayerToken);
                 })
                 .Build();
