@@ -1,10 +1,9 @@
-version: "3.9"
 services:
   bingoserver:
     container_name: bingo_container
     image: "bingo:c3.1-001"
     env_file:
-      - ./docker-env-vars-for-bingo
+      - ./setup/docker-env-vars-for-bingo
     networks:
       - backend_space
 
@@ -12,13 +11,19 @@ services:
     container_name: webserver_container
     image: "nginx:1.25.2"
     volumes:
-      - /mnt/d/repos/bingo/setup/nginx.with.tls.conf:/etc/nginx/conf.d/default.conf
-      - /home/pablo/local-docker-volumes/nginx/para_bingo/bingo-nginx-selfsigned.crt:/etc/ssl/certs/bingo-nginx-selfsigned.crt:ro
-      - /home/pablo/local-docker-volumes/nginx/para_bingo/bingo-nginx-selfsigned.private.key:/etc/ssl/private/bingo-nginx-selfsigned.private.key:ro
+      - ./setup/nginx.without.tls.conf:/etc/nginx/conf.d/default.conf
     ports:
-      - "5000:443"
+      - "80:80"
     networks: 
       - backend_space
+      
+  ingress:
+    image: ngrok/ngrok:3-alpine
+    command:
+      - "http"
+      - "http://host.docker.internal:80"
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
 
 networks:
   backend_space:
